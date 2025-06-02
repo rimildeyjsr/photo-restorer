@@ -2,7 +2,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { ImageUploader } from "@/components/ImageUploader";
 import { ImagePreview } from "@/components/ImagePreview";
-import { PromptInput } from "@/components/PromptInput";
 import { ErrorDisplay } from "@/components/ErrorDisplay";
 import { Button } from "@/catalyst-ui-kit/button";
 import { SparklesIcon } from "@heroicons/react/24/outline";
@@ -10,13 +9,11 @@ import type { ImageFile } from "@/types/image";
 
 export default function Home() {
   const [uploadedImage, setUploadedImage] = useState<ImageFile | null>(null);
-  const [prompt, setPrompt] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleFileUpload = useCallback((imageFile: ImageFile) => {
     setUploadedImage(imageFile);
-    setPrompt("");
     setError(null);
   }, []);
 
@@ -28,35 +25,28 @@ export default function Home() {
     if (uploadedImage) {
       URL.revokeObjectURL(uploadedImage.preview);
       setUploadedImage(null);
-      setPrompt("");
       setError(null);
     }
   }, [uploadedImage]);
 
-  const handlePromptChange = useCallback((newPrompt: string) => {
-    setPrompt(newPrompt);
-  }, []);
-
   const handleSubmit = useCallback(async () => {
-    if (!uploadedImage || !prompt.trim() || isSubmitting) return;
+    if (!uploadedImage || isSubmitting) return;
 
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // Add your submission logic here
-      console.log("Submitting:", { image: uploadedImage, prompt });
+      console.log("Submitting:", { image: uploadedImage });
 
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
-  }, [uploadedImage, prompt, isSubmitting]);
+  }, [uploadedImage, isSubmitting]);
 
-  const canSubmit = uploadedImage && prompt.trim() && !isSubmitting;
+  const canSubmit = uploadedImage && !isSubmitting;
 
   useEffect(() => {
     return () => {
@@ -71,20 +61,24 @@ export default function Home() {
       {uploadedImage ? (
         <>
           <ImagePreview image={uploadedImage} onRemove={handleRemoveImage} />
-          <PromptInput
-            value={prompt}
-            onChange={handlePromptChange}
-            placeholder="Enter Prompt ..."
-          />
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
             <Button
-              color="emerald"
+              outline
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="w-64"
+              className="w-48"
             >
               <SparklesIcon />
-              {isSubmitting ? "Processing..." : "Edit"}
+              {isSubmitting ? "Processing..." : "Recolour"}
+            </Button>
+            <Button
+              outline
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="w-48"
+            >
+              <SparklesIcon />
+              {isSubmitting ? "Processing..." : "Restore"}
             </Button>
           </div>
         </>
