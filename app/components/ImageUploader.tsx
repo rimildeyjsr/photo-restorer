@@ -1,16 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import { Button } from "@/catalyst-ui-kit/button";
-import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
-
-interface ImageFile {
-  file: File;
-  preview: string;
-  id: string;
-}
+import { PhotoIcon } from "@heroicons/react/24/outline";
+import type { ImageFile } from "@/types/image";
 
 interface ImageUploaderProps {
-  onFilesChange?: (files: File[]) => void;
-  maxFiles?: number;
+  onFileUpload: (imageFile: ImageFile) => void;
+  onError: (error: string) => void;
   maxSizeInMB?: number;
   acceptedFormats?: string[];
   className?: string;
@@ -25,15 +19,13 @@ const DEFAULT_ACCEPTED_FORMATS = [
 const DEFAULT_MAX_SIZE_MB = 20;
 
 export function ImageUploader({
-  onFilesChange,
-  maxFiles = 1,
+  onFileUpload,
+  onError,
   maxSizeInMB = DEFAULT_MAX_SIZE_MB,
   acceptedFormats = DEFAULT_ACCEPTED_FORMATS,
   className = "",
 }: ImageUploaderProps) {
-  const [image, setImage] = useState<ImageFile | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = useCallback(
@@ -55,21 +47,19 @@ export function ImageUploader({
     (file: File) => {
       const validationError = validateFile(file);
       if (validationError) {
-        setError(`${file.name}: ${validationError}`);
+        onError(`${file.name}: ${validationError}`);
         return;
       }
 
-      setError(null);
       const imageFile: ImageFile = {
         file,
         preview: URL.createObjectURL(file),
         id: `${file.name}-${Date.now()}-${Math.random()}`,
       };
 
-      setImage(imageFile);
-      onFilesChange?.([file]);
+      onFileUpload(imageFile);
     },
-    [validateFile, onFilesChange],
+    [validateFile, onFileUpload, onError],
   );
 
   const handleFileSelect = useCallback(
@@ -106,69 +96,9 @@ export function ImageUploader({
     setDragActive(false);
   }, []);
 
-  const removeImage = useCallback(() => {
-    if (image) {
-      URL.revokeObjectURL(image.preview);
-      setImage(null);
-      onFilesChange?.([]);
-      setError(null);
-    }
-  }, [image, onFilesChange]);
-
   const openFileDialog = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
-
-  if (image) {
-    return (
-      <div className={`space-y-4 ${className}`}>
-        <div className="flex justify-center">
-          <div className="relative group">
-            <Button
-              plain
-              onClick={removeImage}
-              className="absolute top-5 right-2 rounded-full bg-white dark:bg-zinc-800 p-1.5 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-600 shadow-sm data-[hover]:!bg-white dark:data-[hover]:!bg-zinc-800"
-            >
-              <XMarkIcon className="h-4 w-4" data-slot="icon" />
-            </Button>
-
-            <div className="aspect-square w-64 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-200 dark:ring-zinc-700">
-              <img
-                src={image.preview}
-                alt={image.file.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-
-        {error && (
-          <div className="flex justify-center">
-            <div className="rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 p-4 max-w-md">
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-red-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                  {error}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -229,31 +159,6 @@ export function ImageUploader({
           </div>
         </div>
       </div>
-
-      {error && (
-        <div className="flex justify-center">
-          <div className="rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 p-4 max-w-md">
-            <div className="flex items-center space-x-2">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                {error}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
