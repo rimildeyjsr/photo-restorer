@@ -57,14 +57,31 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const users = await prisma.user.findMany();
-    return NextResponse.json(users);
+    const { searchParams } = new URL(request.url);
+    const firebaseUid = searchParams.get("firebaseUid");
+
+    if (!firebaseUid) {
+      return NextResponse.json(
+        { error: "Firebase UID is required" },
+        { status: 400 },
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ user });
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error fetching user:", error);
     return NextResponse.json(
-      { detail: "Failed to fetch users" },
+      { error: "Failed to fetch user" },
       { status: 500 },
     );
   }
