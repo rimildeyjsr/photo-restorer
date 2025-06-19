@@ -26,7 +26,14 @@ const convertFileToBase64 = (file: File): Promise<string> => {
 };
 
 export default function Home() {
-  const { user, loading: authLoading } = useAuth();
+  const {
+    user,
+    userData,
+    credits,
+    loading: authLoading,
+    isNewUser,
+  } = useAuth();
+
   const [uploadedImage, setUploadedImage] = useState<ImageFile | null>(null);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +61,15 @@ export default function Home() {
   const handleRestore = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    if (!uploadedImage?.file || isSubmitting || !user) return;
+    if (!uploadedImage?.file || isSubmitting || !user || !userData) return;
+
+    // Check if user has credits
+    if (credits <= 0) {
+      setError(
+        "You don't have enough credits to process this image. Please purchase more credits.",
+      );
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -123,6 +138,9 @@ export default function Home() {
       if (prediction.status === "failed") {
         throw new Error(prediction.error || "Prediction failed");
       }
+
+      // TODO: Deduct credits on successful completion
+      // This should be handled in your API route
     } catch (err) {
       console.error("Error in handleRestore:", err);
       setError(
@@ -133,7 +151,8 @@ export default function Home() {
     }
   };
 
-  const canSubmit = uploadedImage && !isSubmitting && user;
+  const canSubmit =
+    uploadedImage && !isSubmitting && user && userData && credits > 0;
 
   useEffect(() => {
     return () => {
@@ -153,7 +172,15 @@ export default function Home() {
 
   return (
     <div className="m-28 space-y-6">
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-between items-center mb-6">
+        {/* Credits Display */}
+        {userData && (
+          <div className="bg-blue-50 px-4 py-2 rounded-lg">
+            <span className="text-sm font-medium text-blue-900">
+              Credits: {credits}
+            </span>
+          </div>
+        )}
         <Authentication />
       </div>
 
@@ -166,8 +193,32 @@ export default function Home() {
             You need to be authenticated to use the image restoration features.
           </p>
         </div>
-      ) : (
+      ) : userData ? (
         <>
+          {isNewUser && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <h3 className="text-green-800 font-medium">
+                Welcome to Photo Restorer!
+              </h3>
+              <p className="text-green-700 text-sm mt-1">
+                You currently have {credits} credits. Purchase credits to start
+                restoring your photos.
+              </p>
+            </div>
+          )}
+
+          {credits <= 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h3 className="text-yellow-800 font-medium">
+                No Credits Remaining
+              </h3>
+              <p className="text-yellow-700 text-sm mt-1">
+                You need credits to process images. Please purchase credits to
+                continue.
+              </p>
+            </div>
+          )}
+
           {uploadedImage ? (
             <>
               <ImagePreview
@@ -194,11 +245,17 @@ export default function Home() {
                   {isSubmitting ? "Processing..." : "Restore"}
                 </Button>
               </div>
+              {credits <= 0 && (
+                <p className="text-center text-sm text-red-600 mt-2">
+                  Purchase credits to process images
+                </p>
+              )}
             </>
           ) : (
             <ImageUploader
               onFileUpload={handleFileUpload}
               onError={handleError}
+              disabled={credits <= 0}
             />
           )}
 
@@ -223,6 +280,11 @@ export default function Home() {
             </>
           )}
         </>
+      ) : (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="text-gray-600 mt-2">Setting up your account...</p>
+        </div>
       )}
     </div>
   );
