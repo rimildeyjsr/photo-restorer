@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
+import { errorResponse } from "@/api/utils/errorResponse";
+import { validateUser } from "@/api/utils/validateUser";
 
 const prisma = new PrismaClient();
 
@@ -9,19 +11,16 @@ export async function POST(request: NextRequest) {
     const { firebaseUid, email, name } = body;
 
     if (!firebaseUid || !email) {
-      return NextResponse.json(
-        { error: "Firebase UID and email are required" },
-        { status: 400 },
-      );
+      return errorResponse("Firebase UID and email are required", 400);
     }
 
-    // check if user exists
+    // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { firebaseUid },
     });
 
     if (existingUser) {
-      // User exists, optionally update their info
+      // User exists, update their info
       const updatedUser = await prisma.user.update({
         where: { firebaseUid },
         data: {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // create new user
+    // Create new user
     const newUser = await prisma.user.create({
       data: {
         firebaseUid,
@@ -50,10 +49,7 @@ export async function POST(request: NextRequest) {
       isNewUser: true,
     });
   } catch (error) {
-    return NextResponse.json(
-      { detail: "Failed to create user" },
-      { status: 500 },
-    );
+    return errorResponse("Failed to create user", 500);
   }
 }
 
@@ -63,26 +59,20 @@ export async function GET(request: NextRequest) {
     const firebaseUid = searchParams.get("firebaseUid");
 
     if (!firebaseUid) {
-      return NextResponse.json(
-        { error: "Firebase UID is required" },
-        { status: 400 },
-      );
+      return errorResponse("Firebase UID is required", 400);
     }
 
-    const user = await prisma.user.findUnique({
-      where: { firebaseUid },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    try {
+      const user = await validateUser(firebaseUid);
+      return NextResponse.json({ user });
+    } catch (validationError) {
+      const message =
+        validationError instanceof Error
+          ? validationError.message
+          : "Unknown validation error";
+      return errorResponse(message, 404);
     }
-
-    return NextResponse.json({ user });
   } catch (error) {
-    console.error("Error fetching user:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user" },
-      { status: 500 },
-    );
+    return errorResponse("Failed to fetch user", 500);
   }
 }
