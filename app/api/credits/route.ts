@@ -1,64 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
+import { PACKAGES } from "@/api/constants/package";
+import { PackageType } from "@/api/types/types";
+import { validatePackage } from "@/api/utils/validatePackage";
+import { validateUser } from "@/api/utils/validateUser";
+import { errorResponse } from "@/api/utils/errorResponse";
 
 const prisma = new PrismaClient();
-
-const PACKAGES = {
-  lite: {
-    credits: 5,
-    price: 10,
-    name: "Lite Package",
-  },
-  pro: {
-    credits: 100,
-    price: 125,
-    name: "Pro Package",
-  },
-};
-
-type PackageType = keyof typeof PACKAGES;
 
 export async function GET(request: NextRequest) {
   try {
     return NextResponse.json({ packages: PACKAGES });
   } catch (error) {
-    return NextResponse.json(
-      { detail: "Failed to fetch packages" },
-      { status: 500 },
-    );
+    return errorResponse("Failed to fetch packages", 500);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
     const { firebaseUid, packageName } = body;
 
     if (!firebaseUid || !packageName) {
-      return NextResponse.json(
-        { error: "ID and package name are required" },
-        { status: 400 },
-      );
+      return errorResponse("Firebase UID and package name are required", 400);
     }
 
-    // check if user exists
-    const existingUser = await prisma.user.findUnique({
-      where: { firebaseUid },
-    });
-
-    if (!existingUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    try {
+      // These will throw if validation fails
+      await validateUser(firebaseUid);
+      validatePackage(packageName);
+    } catch (validationError) {
+      const message =
+        validationError instanceof Error
+          ? validationError.message
+          : "Unknown validation error";
+      return errorResponse(message, 404);
     }
 
-    // check if package exists
-    const existingPackage = Object.keys(PACKAGES).includes(packageName);
-
-    if (!existingPackage) {
-      return NextResponse.json({ error: "Package not found" }, { status: 404 });
-    }
-
-    // update user's credits
     const updatedUser = await prisma.user.update({
       where: { firebaseUid },
       data: {
@@ -68,16 +46,62 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    return NextResponse.json({ user: updatedUser }, { status: 200 });
+  } catch (error) {
+    return errorResponse("Failed to process request", 500);
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { firebaseUid, amount } = body;
+
+    if (!firebaseUid || typeof amount !== "number" || amount <= 0) {
+      return errorResponse(
+        "Firebase UID and positive amount are required",
+        400,
+      );
+    }
+
+    try {
+      await validateUser(firebaseUid);
+    } catch (validationError) {
+      const message =
+        validationError instanceof Error
+          ? validationError.message
+          : "Unknown validation error";
+      return errorResponse(message, 404);
+    }
+
+    const updatedResult = await prisma.user.updateMany({
+      where: {
+        firebaseUid,
+        credits: { gte: amount },
+      },
+      data: {
+        credits: { decrement: amount },
+      },
+    });
+
+    if (updatedResult.count === 0) {
+      return errorResponse("Insufficient credits", 400);
+    }
+
+    // Fetch the updated user to return current state
+    const updatedUser = await prisma.user.findUnique({
+      where: { firebaseUid },
+    });
+
     return NextResponse.json(
       {
         user: updatedUser,
+        deducted: amount,
+        remaining: updatedUser!.credits,
       },
       { status: 200 },
     );
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to process request" },
-      { status: 500 },
-    );
+    return errorResponse("Failed to process request", 500);
   }
 }
