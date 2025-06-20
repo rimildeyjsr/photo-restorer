@@ -25,6 +25,29 @@ const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+const deductCredit = async (user: any, amount: number = 1) => {
+  const idToken = await user.getIdToken();
+
+  const response = await fetch("/api/credits", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({
+      firebaseUid: user.uid,
+      amount: amount,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to deduct credits");
+  }
+
+  return await response.json();
+};
+
 export default function Home() {
   const {
     user,
@@ -32,6 +55,7 @@ export default function Home() {
     credits,
     loading: authLoading,
     isNewUser,
+    refreshUserData,
   } = useAuth();
 
   const [uploadedImage, setUploadedImage] = useState<ImageFile | null>(null);
@@ -79,6 +103,7 @@ export default function Home() {
       const base64Image = await convertFileToBase64(uploadedImage.file);
       const idToken = await user.getIdToken();
 
+      // Start the prediction (no credit deduction yet)
       const response = await fetch("/api/predictions", {
         method: "POST",
         headers: {
@@ -94,7 +119,7 @@ export default function Home() {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         try {
           const errorData = await response.json();
-          errorMessage = errorData.detail || errorMessage;
+          errorMessage = errorData.error || errorMessage;
         } catch {
           errorMessage = `Server error: ${response.status}`;
         }
@@ -102,8 +127,8 @@ export default function Home() {
       }
 
       let prediction = await response.json();
-      setPrediction(prediction);
 
+      // Poll for completion
       while (
         prediction.status !== "succeeded" &&
         prediction.status !== "failed"
@@ -123,7 +148,7 @@ export default function Home() {
           let errorMessage = `HTTP ${statusResponse.status}: ${statusResponse.statusText}`;
           try {
             const errorData = await statusResponse.json();
-            errorMessage = errorData.detail || errorMessage;
+            errorMessage = errorData.error || errorMessage;
           } catch {
             errorMessage = `Status check failed: ${statusResponse.status}`;
           }
@@ -131,18 +156,33 @@ export default function Home() {
         }
 
         prediction = await statusResponse.json();
-        console.log("Prediction status:", prediction);
-        setPrediction(prediction);
       }
 
       if (prediction.status === "failed") {
         throw new Error(prediction.error || "Prediction failed");
       }
 
-      // TODO: Deduct credits on successful completion
-      // This should be handled in your API route
+      // 🎯 NEW: Deduct credit BEFORE showing the result
+      if (prediction.status === "succeeded") {
+        try {
+          await deductCredit(user, 1);
+
+          // Credit deduction successful - now show the result
+          setPrediction(prediction);
+
+          // Update credits display
+          await refreshUserData();
+        } catch (deductionError) {
+          // Credit deduction failed - don't show the result
+          setError(
+            deductionError instanceof Error
+              ? `Payment processing failed: ${deductionError.message}`
+              : "Payment processing failed. Please try again.",
+          );
+          return;
+        }
+      }
     } catch (err) {
-      console.error("Error in handleRestore:", err);
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred",
       );
