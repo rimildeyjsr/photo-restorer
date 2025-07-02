@@ -30,10 +30,7 @@ export function usePaddle(user?: any, userData?: any) {
     initPaddle();
   }, []);
 
-  const openCheckout = async (
-    packageName: PackageType,
-    onProcessingStart?: () => void,
-  ) => {
+  const openCheckout = async (packageName: PackageType) => {
     if (!paddle) {
       setError("Payment system not initialized");
       return;
@@ -67,16 +64,7 @@ export function usePaddle(user?: any, userData?: any) {
           userEmail: userData.email, // ✅ Always has this
           userName: userData.name || "Unknown",
         },
-        settings: {
-          successUrl: window.location.origin + "?payment=success",
-          closeUrl: window.location.origin + "?payment=cancelled",
-        },
       });
-
-      // Start processing immediately when checkout opens
-      if (onProcessingStart) {
-        onProcessingStart();
-      }
     } catch (err) {
       console.error("Checkout failed:", err);
       setError("Failed to open checkout");

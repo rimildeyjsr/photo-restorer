@@ -99,25 +99,26 @@ export default function Home() {
     try {
       console.log("🛒 Starting purchase for:", packageName);
 
-      // Open checkout with callback to start processing
-      await openCheckout(packageName, () => {
-        // This runs immediately when checkout opens
-        console.log("✅ Checkout opened - starting processing state");
-        setIsProcessingPayment(true);
-        setShowPurchaseModal(false);
+      // Set processing state immediately when starting checkout
+      setIsProcessingPayment(true);
+      setShowPurchaseModal(false);
 
-        // Wait 90 seconds for webhook, then refresh
-        setTimeout(async () => {
-          console.log("🔄 Refreshing user data after webhook delay");
-          try {
-            await refreshUserData();
-            console.log("✅ User data refreshed");
-          } catch (e) {
-            console.log("❌ Failed to refresh:", e);
-          }
-          setIsProcessingPayment(false);
-        }, 90000);
-      });
+      // Open Paddle checkout
+      await openCheckout(packageName);
+
+      console.log("✅ Checkout opened, waiting for webhook");
+
+      // Wait 90 seconds for webhook, then refresh credits
+      setTimeout(async () => {
+        console.log("🔄 Refreshing user data after webhook delay");
+        try {
+          await refreshUserData();
+          console.log("✅ User data refreshed");
+        } catch (e) {
+          console.log("❌ Failed to refresh:", e);
+        }
+        setIsProcessingPayment(false);
+      }, 90000);
     } catch (err) {
       console.error("❌ Purchase failed:", err);
       setError("Failed to open checkout. Please try again.");
@@ -325,7 +326,7 @@ export default function Home() {
               <Button
                 outline
                 onClick={() => setShowPurchaseModal(true)}
-                disabled={!paddleReady || paddleLoading}
+                disabled={!paddleReady || paddleLoading || isProcessingPayment}
                 className="mt-3"
               >
                 <CreditCardIcon className="h-4 w-4" />
