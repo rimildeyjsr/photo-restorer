@@ -11,7 +11,7 @@ export function usePaddle() {
   useEffect(() => {
     const initPaddle = async () => {
       try {
-        const paddleInstance: Paddle | undefined = await initializePaddle({
+        const paddleInstance = await initializePaddle({
           environment: "sandbox", // Change to "production" when going live
           token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
         });
@@ -37,6 +37,11 @@ export function usePaddle() {
     try {
       const packageInfo = PACKAGES[packageName];
 
+      console.log("Opening checkout for:", packageName);
+      console.log("Package info:", packageInfo);
+      console.log("Product ID:", packageInfo.paddleProductId);
+
+      // Simple test - remove custom data and extra settings
       await paddle.Checkout.open({
         items: [
           {
@@ -44,15 +49,6 @@ export function usePaddle() {
             quantity: 1,
           },
         ],
-        customData: {
-          packageName,
-          credits: packageInfo.credits.toString(),
-        },
-        settings: {
-          displayMode: "overlay",
-          theme: "light",
-          locale: "en",
-        },
       });
     } catch (err) {
       console.error("Checkout failed:", err);
