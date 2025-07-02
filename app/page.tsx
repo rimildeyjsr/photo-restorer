@@ -66,7 +66,7 @@ export default function Home() {
     loading: paddleLoading,
     error: paddleError,
     isReady: paddleReady,
-  } = usePaddle();
+  } = usePaddle(user, userData);
 
   const [uploadedImage, setUploadedImage] = useState<ImageFile | null>(null);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
@@ -97,15 +97,15 @@ export default function Home() {
 
   const handlePurchase = async (packageName: PackageType) => {
     try {
-      setIsProcessingPayment(true);
       await openCheckout(packageName);
       setShowPurchaseModal(false);
+      setIsProcessingPayment(true);
 
-      // Show processing state for 90 seconds (webhook delay)
-      setTimeout(() => {
+      // Show processing state and refresh credits after webhook delay
+      setTimeout(async () => {
+        await refreshUserData();
         setIsProcessingPayment(false);
-        refreshUserData(); // Refresh to get updated credits
-      }, 90000);
+      }, 90000); // 90 seconds for webhook
     } catch (err) {
       setError("Failed to open checkout. Please try again.");
       setIsProcessingPayment(false);

@@ -3,7 +3,12 @@ import { initializePaddle, Paddle } from "@paddle/paddle-js";
 import { PACKAGES } from "@/api/constants/package";
 import { PackageType } from "@/api/types/types";
 
-export function usePaddle() {
+interface UsePaddleProps {
+  user?: any;
+  userData?: any;
+}
+
+export function usePaddle(user?: any, userData?: any) {
   const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +56,8 @@ export function usePaddle() {
         customData: {
           packageName,
           credits: packageInfo.credits.toString(),
+          firebaseUid: user?.uid || "no-uid",
+          userEmail: userData?.email || "no-email",
         },
       });
     } catch (err) {

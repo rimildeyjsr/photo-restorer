@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       console.log("🔍 Found by custom email:", user?.email);
     }
 
-    // Method 3: Email from Paddle customer
+    // Method 3: Email from Paddle customer (rare)
     if (!user && transaction.customer?.email) {
       user = await prisma.user.findUnique({
         where: { email: transaction.customer.email },
@@ -76,17 +76,20 @@ export async function POST(request: NextRequest) {
       console.log("🔍 Found by Paddle email:", user?.email);
     }
 
-    // Method 4: Most recent user (fallback)
+    // Method 4: Most recent user (fallback for sandbox/testing)
     if (!user) {
       user = await prisma.user.findFirst({
         orderBy: { createdAt: "desc" },
       });
-      console.log("🔍 Using most recent user:", user?.email);
+      console.log("🔍 Using most recent user as fallback:", user?.email);
     }
 
     if (!user) {
-      console.log("❌ No user found");
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      console.log("❌ No user found at all");
+      return NextResponse.json(
+        { error: "No users exist in database" },
+        { status: 404 },
+      );
     }
 
     // Add credits
