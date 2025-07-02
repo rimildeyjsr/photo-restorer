@@ -73,6 +73,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
+  const [isProcessingPayment, setIsProcessingPayment] =
+    useState<boolean>(false);
 
   const handleFileUpload = useCallback((imageFile: ImageFile) => {
     setUploadedImage(imageFile);
@@ -95,12 +97,18 @@ export default function Home() {
 
   const handlePurchase = async (packageName: PackageType) => {
     try {
+      setIsProcessingPayment(true);
       await openCheckout(packageName);
       setShowPurchaseModal(false);
-      // Note: Credits will be added via webhook, so user should refresh
-      // We could add a polling mechanism here to check for credit updates
+
+      // Show processing state for 90 seconds (webhook delay)
+      setTimeout(() => {
+        setIsProcessingPayment(false);
+        refreshUserData(); // Refresh to get updated credits
+      }, 90000);
     } catch (err) {
       setError("Failed to open checkout. Please try again.");
+      setIsProcessingPayment(false);
     }
   };
 
@@ -248,16 +256,21 @@ export default function Home() {
             <div className="bg-blue-50 px-4 py-2 rounded-lg">
               <span className="text-sm font-medium text-blue-900">
                 Credits: {credits}
+                {isProcessingPayment && (
+                  <span className="ml-2 text-orange-600">
+                    (Processing payment...)
+                  </span>
+                )}
               </span>
             </div>
             <Button
               outline
               onClick={() => setShowPurchaseModal(true)}
-              disabled={!paddleReady || paddleLoading}
+              disabled={!paddleReady || paddleLoading || isProcessingPayment}
               className="text-sm"
             >
               <CreditCardIcon className="h-4 w-4" />
-              Buy Credits
+              {isProcessingPayment ? "Processing..." : "Buy Credits"}
             </Button>
           </div>
         )}
