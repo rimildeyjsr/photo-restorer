@@ -41,7 +41,6 @@ export function usePaddle() {
       console.log("Package info:", packageInfo);
       console.log("Product ID:", packageInfo.paddleProductId);
 
-      // Simple test - remove custom data and extra settings
       await paddle.Checkout.open({
         items: [
           {
@@ -49,6 +48,10 @@ export function usePaddle() {
             quantity: 1,
           },
         ],
+        customData: {
+          packageName,
+          credits: packageInfo.credits.toString(),
+        },
       });
     } catch (err) {
       console.error("Checkout failed:", err);
