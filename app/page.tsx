@@ -97,16 +97,29 @@ export default function Home() {
 
   const handlePurchase = async (packageName: PackageType) => {
     try {
-      await openCheckout(packageName);
-      setShowPurchaseModal(false);
-      setIsProcessingPayment(true);
+      console.log("🛒 Starting purchase for:", packageName);
 
-      // Show processing state and refresh credits after webhook delay
-      setTimeout(async () => {
-        await refreshUserData();
-        setIsProcessingPayment(false);
-      }, 90000); // 90 seconds for webhook
+      // Open checkout with callback to start processing
+      await openCheckout(packageName, () => {
+        // This runs immediately when checkout opens
+        console.log("✅ Checkout opened - starting processing state");
+        setIsProcessingPayment(true);
+        setShowPurchaseModal(false);
+
+        // Wait 90 seconds for webhook, then refresh
+        setTimeout(async () => {
+          console.log("🔄 Refreshing user data after webhook delay");
+          try {
+            await refreshUserData();
+            console.log("✅ User data refreshed");
+          } catch (e) {
+            console.log("❌ Failed to refresh:", e);
+          }
+          setIsProcessingPayment(false);
+        }, 90000);
+      });
     } catch (err) {
+      console.error("❌ Purchase failed:", err);
       setError("Failed to open checkout. Please try again.");
       setIsProcessingPayment(false);
     }
