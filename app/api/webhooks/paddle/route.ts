@@ -1,3 +1,5 @@
+// Create this file: app/api/webhooks/paddle/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
 import { PACKAGES } from "@/api/constants/package";
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user) {
-      console.log("❌ User not found with email:", customerEmail);
+      console.log("❌ User not found with email:", userEmail);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -104,7 +106,7 @@ export async function POST(request: NextRequest) {
       currency: transaction.currency_code,
       packageName,
       creditsAdded: packageInfo.credits,
-      userEmail: customerEmail,
+      userEmail: userEmail,
       newCreditBalance: updatedUser.credits,
     });
 
