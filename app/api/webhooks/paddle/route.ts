@@ -20,11 +20,15 @@ export async function POST(request: NextRequest) {
     console.log("🔔 Paddle webhook received");
 
     const body = await request.json();
-    console.log("Webhook data:", JSON.stringify(body, null, 2));
+    console.log("📨 Full webhook body:", JSON.stringify(body, null, 2));
+    console.log("📨 Event type received:", body.event_type);
 
     // Paddle sends different event types - we want transaction.completed
     if (body.event_type !== "transaction.completed") {
-      console.log("❌ Not a completed transaction, ignoring");
+      console.log(
+        "❌ Not a completed transaction, ignoring. Event type:",
+        body.event_type,
+      );
       return NextResponse.json({ message: "Event type not handled" });
     }
 
@@ -48,32 +52,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid package" }, { status: 400 });
     }
 
-    // Try to get customer email, or use a different approach
-    let customerEmail = transaction.customer?.email;
-
-    // If no email in customer object, try to get it from customer_id
-    if (!customerEmail && transaction.customer_id) {
-      console.log(
-        "⚠️ No customer email in webhook, using customer_id:",
-        transaction.customer_id,
-      );
-      // For now, we'll skip email validation and find user another way
-      // You might want to store customer_id in your database in the future
-    }
-
-    console.log(
-      `💳 Processing payment for customer ${transaction.customer_id}, package: ${packageName}`,
-    );
-
-    // If we have email, find by email. Otherwise, find by most recent user (for testing)
+    // Try multiple ways to find the user
     let user;
-    if (customerEmail) {
+    const firebaseUid = customData.firebaseUid;
+    const userEmail = customData.userEmail || transaction.customer?.email;
+
+    if (firebaseUid) {
+      // Best approach: find by Firebase UID
       user = await prisma.user.findUnique({
-        where: { email: customerEmail },
+        where: { firebaseUid: firebaseUid },
       });
+      console.log("✅ Found user by Firebase UID:", user?.email);
+    } else if (userEmail) {
+      // Backup: find by email
+      user = await prisma.user.findUnique({
+        where: { email: userEmail },
+      });
+      console.log("✅ Found user by email:", user?.email);
     } else {
-      // Fallback: get the most recently created user (for testing)
-      // In production, you'd want to pass firebaseUid in custom_data
+      // Last resort: use most recent user
       user = await prisma.user.findFirst({
         orderBy: { createdAt: "desc" },
       });
