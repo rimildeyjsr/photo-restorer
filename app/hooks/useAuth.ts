@@ -52,7 +52,18 @@ export const useAuth = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to sync user with database");
+        // Get the actual error from the API
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        console.error("API Error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        });
+        throw new Error(
+          `Failed to sync user with database: ${response.status} - ${errorData.error || response.statusText}`,
+        );
       }
 
       const { user, isNewUser } = await response.json();

@@ -4,10 +4,13 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { ImagePreview } from "@/components/ImagePreview";
 import { ErrorDisplay } from "@/components/ErrorDisplay";
 import { Authentication } from "@/components/Authentication";
+import { PurchaseCreditsModal } from "@/components/PurchaseCreditsModal";
 import { Button } from "@/catalyst-ui-kit/button";
-import { SparklesIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaddle } from "@/hooks/usePaddle";
 import type { ImageFile } from "@/types/image";
+import type { PackageType } from "@/api/types/types";
 import { Prediction } from "replicate";
 import Image from "next/image";
 
@@ -58,10 +61,18 @@ export default function Home() {
     refreshUserData,
   } = useAuth();
 
+  const {
+    openCheckout,
+    loading: paddleLoading,
+    error: paddleError,
+    isReady: paddleReady,
+  } = usePaddle();
+
   const [uploadedImage, setUploadedImage] = useState<ImageFile | null>(null);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
 
   const handleFileUpload = useCallback((imageFile: ImageFile) => {
     setUploadedImage(imageFile);
@@ -81,6 +92,17 @@ export default function Home() {
       setPrediction(null);
     }
   }, [uploadedImage]);
+
+  const handlePurchase = async (packageName: PackageType) => {
+    try {
+      await openCheckout(packageName);
+      setShowPurchaseModal(false);
+      // Note: Credits will be added via webhook, so user should refresh
+      // We could add a polling mechanism here to check for credit updates
+    } catch (err) {
+      setError("Failed to open checkout. Please try again.");
+    }
+  };
 
   const handleRestore = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -162,7 +184,7 @@ export default function Home() {
         throw new Error(prediction.error || "Prediction failed");
       }
 
-      // 🎯 NEW: Deduct credit BEFORE showing the result
+      // Deduct credit BEFORE showing the result
       if (prediction.status === "succeeded") {
         try {
           await deductCredit(user, 1);
@@ -202,6 +224,13 @@ export default function Home() {
     };
   }, [uploadedImage]);
 
+  // Show paddle error if it exists
+  useEffect(() => {
+    if (paddleError) {
+      setError(paddleError);
+    }
+  }, [paddleError]);
+
   if (authLoading) {
     return (
       <div className="m-28 flex items-center justify-center">
@@ -213,12 +242,23 @@ export default function Home() {
   return (
     <div className="m-28 space-y-6">
       <div className="flex justify-between items-center mb-6">
-        {/* Credits Display */}
+        {/* Credits Display with Buy Credits Button */}
         {userData && (
-          <div className="bg-blue-50 px-4 py-2 rounded-lg">
-            <span className="text-sm font-medium text-blue-900">
-              Credits: {credits}
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-50 px-4 py-2 rounded-lg">
+              <span className="text-sm font-medium text-blue-900">
+                Credits: {credits}
+              </span>
+            </div>
+            <Button
+              outline
+              onClick={() => setShowPurchaseModal(true)}
+              disabled={!paddleReady || paddleLoading}
+              className="text-sm"
+            >
+              <CreditCardIcon className="h-4 w-4" />
+              Buy Credits
+            </Button>
           </div>
         )}
         <Authentication />
@@ -256,6 +296,15 @@ export default function Home() {
                 You need credits to process images. Please purchase credits to
                 continue.
               </p>
+              <Button
+                outline
+                onClick={() => setShowPurchaseModal(true)}
+                disabled={!paddleReady || paddleLoading}
+                className="mt-3"
+              >
+                <CreditCardIcon className="h-4 w-4" />
+                Buy Credits Now
+              </Button>
             </div>
           )}
 
@@ -326,6 +375,14 @@ export default function Home() {
           <p className="text-gray-600 mt-2">Setting up your account...</p>
         </div>
       )}
+
+      {/* Purchase Credits Modal */}
+      <PurchaseCreditsModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
+        onPurchase={handlePurchase}
+        loading={paddleLoading}
+      />
     </div>
   );
 }
