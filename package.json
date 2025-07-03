@@ -4,12 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
-    "build-open": "opennextjs-cloudflare build",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "build": "prisma generate && next build",
+    "build-open": "prisma generate && opennextjs-cloudflare build",
+    "preview": "npm run build-open && opennextjs-cloudflare preview",
+    "deploy": "npm run build-open && opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "next lint"
   },
