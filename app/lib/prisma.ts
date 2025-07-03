@@ -7,15 +7,19 @@ const globalForPrisma = globalThis as unknown as {
 function createPrismaClient(): PrismaClient {
   try {
     if (typeof window === "undefined" && process.env.DATABASE_URL) {
-      const { PrismaNeon } = require("@prisma/adapter-neon");
-      const adapter = new PrismaNeon({
+      // Try to use the pg adapter
+      const { PrismaPg } = require("@prisma/adapter-pg");
+      const { Pool } = require("pg");
+
+      const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
       });
 
+      const adapter = new PrismaPg(pool);
       return new PrismaClient({ adapter } as any);
     }
   } catch (error) {
-    console.log("Adapter not available, using regular client");
+    console.log("Adapter not available, using regular client:", error);
   }
 
   return new PrismaClient({
