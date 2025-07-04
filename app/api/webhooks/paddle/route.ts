@@ -1,11 +1,8 @@
-// app/api/webhooks/paddle/route.ts - FINAL SOLUTION
-
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
+import { eq, sql } from "drizzle-orm";
+import { db, users } from "@/lib/db";
 import { PACKAGES } from "@/api/constants/package";
 import { PackageType } from "@/api/types/types";
-
-const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,27 +48,32 @@ export async function POST(request: NextRequest) {
       `💳 Processing ${packageName} for user ${firebaseUid} (${userEmail})`,
     );
 
-    // Find user by Firebase UID (most reliable)
-    let user = await prisma.user.findUnique({
-      where: { firebaseUid: firebaseUid },
-    });
+    // Find user by Firebase UID
+    const userResult = await db
+      .select()
+      .from(users)
+      .where(eq(users.firebaseUid, firebaseUid))
+      .limit(1);
 
-    if (!user) {
+    if (userResult.length === 0) {
       console.log("❌ User not found with UID:", firebaseUid);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const user = userResult[0];
     console.log("✅ Found user:", user.email);
 
     // Add credits
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        credits: {
-          increment: packageInfo.credits,
-        },
-      },
-    });
+    const updatedUsers = await db
+      .update(users)
+      .set({
+        credits: sql`${users.credits} + ${packageInfo.credits}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id))
+      .returning();
+
+    const updatedUser = updatedUsers[0];
 
     console.log(
       `✅ SUCCESS: Added ${packageInfo.credits} credits to ${user.email}`,
