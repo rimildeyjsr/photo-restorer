@@ -1,15 +1,16 @@
-import { PrismaClient } from "@/generated/prisma";
-
-const prisma = new PrismaClient();
+import { eq } from "drizzle-orm";
+import { db, users } from "@/lib/db";
 
 export async function validateUser(firebaseUid: string) {
-  const user = await prisma.user.findUnique({
-    where: { firebaseUid },
-  });
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.firebaseUid, firebaseUid))
+    .limit(1);
 
-  if (!user) {
+  if (user.length === 0) {
     throw new Error("User not found");
   }
 
-  return user;
+  return user[0];
 }

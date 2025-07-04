@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
+import { eq, and, gte, sql } from "drizzle-orm";
+import { db, users } from "@/lib/db";
 import { PACKAGES } from "@/api/constants/package";
 import { PackageType } from "@/api/types/types";
 import { validatePackage } from "@/api/utils/validatePackage";
 import { validateUser } from "@/api/utils/validateUser";
 import { errorResponse } from "@/api/utils/errorResponse";
-
-const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +25,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // These will throw if validation fails
       await validateUser(firebaseUid);
       validatePackage(packageName);
     } catch (validationError) {
@@ -37,16 +35,18 @@ export async function POST(request: NextRequest) {
       return errorResponse(message, 404);
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { firebaseUid },
-      data: {
-        credits: {
-          increment: PACKAGES[packageName as PackageType].credits,
-        },
-      },
-    });
+    const packageInfo = PACKAGES[packageName as PackageType];
 
-    return NextResponse.json({ user: updatedUser }, { status: 200 });
+    const updatedUsers = await db
+      .update(users)
+      .set({
+        credits: sql`${users.credits} + ${packageInfo.credits}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.firebaseUid, firebaseUid))
+      .returning();
+
+    return NextResponse.json({ user: updatedUsers[0] }, { status: 200 });
   } catch (error) {
     return errorResponse("Failed to process request", 500);
   }
@@ -74,30 +74,29 @@ export async function PATCH(request: NextRequest) {
       return errorResponse(message, 404);
     }
 
-    const updatedResult = await prisma.user.updateMany({
-      where: {
-        firebaseUid,
-        credits: { gte: amount },
-      },
-      data: {
-        credits: { decrement: amount },
-      },
-    });
+    // Check if user has enough credits and deduct
+    const updatedUsers = await db
+      .update(users)
+      .set({
+        credits: sql`${users.credits} - ${amount}`,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(users.firebaseUid, firebaseUid), gte(users.credits, amount)),
+      )
+      .returning();
 
-    if (updatedResult.count === 0) {
+    if (updatedUsers.length === 0) {
       return errorResponse("Insufficient credits", 400);
     }
 
-    // Fetch the updated user to return current state
-    const updatedUser = await prisma.user.findUnique({
-      where: { firebaseUid },
-    });
+    const updatedUser = updatedUsers[0];
 
     return NextResponse.json(
       {
         user: updatedUser,
         deducted: amount,
-        remaining: updatedUser!.credits,
+        remaining: updatedUser.credits,
       },
       { status: 200 },
     );

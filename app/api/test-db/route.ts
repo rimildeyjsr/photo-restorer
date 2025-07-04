@@ -1,72 +1,78 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@vercel/postgres";
 
 export async function GET(request: NextRequest) {
+  let client;
+
   try {
-    console.log("🔍 Testing database connection without Prisma");
+    console.log("🔍 Testing Vercel Postgres connection");
 
-    // Check if DATABASE_URL exists
-    const dbUrl = process.env.DATABASE_URL;
-    console.log("DATABASE_URL exists:", !!dbUrl);
-    console.log("DATABASE_URL preview:", dbUrl?.substring(0, 50) + "...");
-
-    if (!dbUrl) {
-      return NextResponse.json(
-        {
-          error: "DATABASE_URL not found",
-          env: process.env,
-        },
-        { status: 500 },
-      );
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL not found");
     }
 
-    // Try direct fetch to Supabase
+    // Create a client with explicit connection string
+    client = createClient({
+      connectionString: process.env.DATABASE_URL,
+    });
+
+    await client.connect();
+
+    // Test connection with a simple query
+    const result = await client.sql`SELECT 1 as test`;
+    console.log("✅ Basic connection works");
+
+    // Check what tables exist
+    const tables = await client.sql`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `;
+
+    console.log("📋 Tables found:", tables.rows);
+
+    // Check if users table exists
+    let usersTableInfo = null;
     try {
-      // Extract connection details
-      const url = new URL(dbUrl);
-      const host = url.hostname;
-      const port = url.port;
-      const database = url.pathname.slice(1);
-      const username = url.username;
-
-      console.log("Connection details:", { host, port, database, username });
-
-      // Test with a simple fetch (this won't work but will show connection attempt)
-      const response = await fetch(`https://${host}/rest/v1/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      console.log("Fetch test response:", response.status);
-
-      return NextResponse.json({
-        success: true,
-        databaseUrl: !!dbUrl,
-        connectionTest: "Basic fetch attempt completed",
-        host: host,
-        status: response.status,
-      });
-    } catch (fetchError: any) {
-      console.error("Fetch error:", fetchError);
-
-      return NextResponse.json(
-        {
-          error: "Connection test failed",
-          details: fetchError.message,
-          databaseUrl: !!dbUrl,
-        },
-        { status: 500 },
-      );
+      const userTableCheck = await client.sql`
+        SELECT column_name, data_type 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' AND table_schema = 'public'
+      `;
+      usersTableInfo = userTableCheck.rows;
+      console.log("👤 Users table structure:", usersTableInfo);
+    } catch (e) {
+      console.log("❌ Users table doesn't exist or has issues");
     }
+
+    return NextResponse.json({
+      success: true,
+      message: "Database connection working - migration ready!",
+      tablesCount: tables.rows.length,
+      tables: tables.rows,
+      usersTableInfo: usersTableInfo,
+      testTime: new Date().toISOString(),
+    });
   } catch (error: any) {
-    console.error("Test endpoint error:", error);
+    console.error("❌ Database test failed:", error);
+
     return NextResponse.json(
       {
-        error: "Test failed",
+        error: "Database connection failed",
         message: error.message,
+        details: error.toString(),
       },
       { status: 500 },
     );
+  } finally {
+    // Always close the connection
+    if (client) {
+      try {
+        await client.end();
+        console.log("🔌 Connection closed");
+      } catch (closeError) {
+        console.log("⚠️ Error closing connection:", closeError);
+      }
+    }
   }
 }
