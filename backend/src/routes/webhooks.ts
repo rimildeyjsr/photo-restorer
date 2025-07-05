@@ -1,9 +1,7 @@
 import { Router, Request, Response } from "express";
 import { eq, sql } from "drizzle-orm";
 import { db, users } from "@/db";
-import { PACKAGES } from "@/utils";
-import { PackageType } from "@/utils";
-import { createError } from "@/middleware/errorHandler";
+import { PACKAGES, PackageType } from "@/utils";
 
 const router = Router();
 
@@ -29,12 +27,12 @@ router.post("/", async (req: Request, res: Response) => {
     // Validate required data
     if (!customData?.packageName) {
       console.log("❌ No package name in webhook");
-      throw createError("No package name", 400);
+      return res.status(400).json({ error: "No package name" });
     }
 
     if (!customData?.firebaseUid) {
       console.log("❌ No Firebase UID in webhook");
-      throw createError("No Firebase UID", 400);
+      return res.status(400).json({ error: "No Firebase UID" });
     }
 
     const packageName = customData.packageName as PackageType;
@@ -45,37 +43,55 @@ router.post("/", async (req: Request, res: Response) => {
     const packageInfo = PACKAGES[packageName];
     if (!packageInfo) {
       console.log("❌ Invalid package:", packageName);
-      throw createError("Invalid package", 400);
+      return res.status(400).json({ error: "Invalid package" });
     }
 
     console.log(
       `💳 Processing ${packageName} for user ${firebaseUid} (${userEmail})`,
     );
 
-    // Find user by Firebase UID
-    const userResult = await db
-      .select()
-      .from(users)
-      .where(eq(users.firebaseUid, firebaseUid))
-      .limit(1);
+    // Find user by Firebase UID with better error handling
+    let userResult;
+    try {
+      userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, firebaseUid))
+        .limit(1);
+    } catch (dbError) {
+      console.error("❌ Database connection error:", dbError);
+      return res.status(500).json({
+        error: "Database connection failed",
+        details: dbError instanceof Error ? dbError.message : "Unknown error",
+      });
+    }
 
     if (userResult.length === 0) {
       console.log("❌ User not found with UID:", firebaseUid);
-      throw createError("User not found", 404);
+      return res.status(404).json({ error: "User not found" });
     }
 
     const user = userResult[0];
     console.log("✅ Found user:", user.email);
 
-    // Add credits
-    const updatedUsers = await db
-      .update(users)
-      .set({
-        credits: sql`${users.credits} + ${packageInfo.credits}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, user.id))
-      .returning();
+    // Add credits with better error handling
+    let updatedUsers;
+    try {
+      updatedUsers = await db
+        .update(users)
+        .set({
+          credits: sql`${users.credits} + ${packageInfo.credits}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+    } catch (dbError) {
+      console.error("❌ Database update error:", dbError);
+      return res.status(500).json({
+        error: "Failed to update credits",
+        details: dbError instanceof Error ? dbError.message : "Unknown error",
+      });
+    }
 
     const updatedUser = updatedUsers[0];
 
@@ -93,12 +109,10 @@ router.post("/", async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("❌ Webhook error:", error);
-
-    if (error instanceof Error && "statusCode" in error) {
-      throw error;
-    }
-
-    throw createError("Webhook failed", 500);
+    res.status(500).json({
+      error: "Webhook failed",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 
