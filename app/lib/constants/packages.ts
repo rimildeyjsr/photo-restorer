@@ -12,3 +12,5 @@ export const PACKAGES = {
     paddleProductId: "pri_01jz5adr3bx5m9dw56jcj4h2p3",
   },
 };
+
+export type PackageType = keyof typeof PACKAGES;

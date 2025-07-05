@@ -8,7 +8,7 @@ import {
 } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { PurchaseCredits } from "./PurchaseCredits";
-import { PackageType } from "@/api/types/types";
+import { PackageType } from "@/lib/constants/packages";
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean;

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { initializePaddle, Paddle } from "@paddle/paddle-js";
-import { PACKAGES } from "@/api/constants/package";
-import { PackageType } from "@/api/types/types";
+import { PACKAGES, PackageType } from "@/lib/constants/packages";
 
 interface UsePaddleProps {
   user?: any;

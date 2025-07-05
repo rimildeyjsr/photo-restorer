@@ -1,6 +1,5 @@
 import { Button } from "@/catalyst-ui-kit/button";
-import { PACKAGES } from "@/api/constants/package";
-import { PackageType } from "@/api/types/types";
+import { PACKAGES, PackageType } from "@/lib/constants/packages";
 import { CreditCardIcon, SparklesIcon } from "@heroicons/react/24/outline";
 
 interface PurchaseCreditsProps {

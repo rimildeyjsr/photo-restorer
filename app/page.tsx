@@ -10,7 +10,7 @@ import { SparklesIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/hooks/useAuth";
 import { usePaddle } from "@/hooks/usePaddle";
 import type { ImageFile } from "@/types/image";
-import type { PackageType } from "@/api/types/types";
+import { PackageType } from "@/lib/constants/packages";
 import { Prediction } from "replicate";
 import Image from "next/image";
 import { API_BASE_URL } from "@/lib/api";
