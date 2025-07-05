@@ -2,12 +2,6 @@ import dotenv from "dotenv";
 import express from "express";
 dotenv.config();
 
-console.log("DATABASE_URL:", process.env.DATABASE_URL ? "SET" : "NOT SET");
-console.log(
-  "First 20 chars of DATABASE_URL:",
-  process.env.DATABASE_URL?.substring(0, 20),
-);
-
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
