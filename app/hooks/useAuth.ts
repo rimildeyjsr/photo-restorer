@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { API_BASE_URL } from "@/lib/api";
 
 interface DatabaseUser {
   id: string;
@@ -38,7 +39,7 @@ export const useAuth = () => {
 
   const createOrUpdateUser = async (firebaseUser: User) => {
     try {
-      const response = await fetch("/api/users", {
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

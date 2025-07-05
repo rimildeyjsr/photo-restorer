@@ -13,6 +13,7 @@ import type { ImageFile } from "@/types/image";
 import type { PackageType } from "@/api/types/types";
 import { Prediction } from "replicate";
 import Image from "next/image";
+import { API_BASE_URL } from "@/lib/api";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -31,7 +32,7 @@ const convertFileToBase64 = (file: File): Promise<string> => {
 const deductCredit = async (user: any, amount: number = 1) => {
   const idToken = await user.getIdToken();
 
-  const response = await fetch("/api/credits", {
+  const response = await fetch(`${API_BASE_URL}/api/credits`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -148,7 +149,7 @@ export default function Home() {
       const idToken = await user.getIdToken();
 
       // Start the prediction (no credit deduction yet)
-      const response = await fetch("/api/predictions", {
+      const response = await fetch(`${API_BASE_URL}/api/predictions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -180,7 +181,7 @@ export default function Home() {
         await sleep(1000);
 
         const statusResponse = await fetch(
-          `/api/predictions/${prediction.id}`,
+          `${API_BASE_URL}/api/predictions/${prediction.id}`,
           {
             headers: {
               Authorization: `Bearer ${idToken}`,
