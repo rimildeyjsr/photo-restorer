@@ -98,23 +98,13 @@ export default function Home() {
 
   const handlePurchase = async (packageName: PackageType) => {
     try {
-      console.log("🛒 Starting purchase for:", packageName);
-
-      // Set processing state immediately when starting checkout
       setIsProcessingPayment(true);
       setShowPurchaseModal(false);
-
-      // Open Paddle checkout
       await openCheckout(packageName);
 
-      console.log("✅ Checkout opened, waiting for webhook");
-
-      // Wait 90 seconds for webhook, then refresh credits
       setTimeout(async () => {
-        console.log("🔄 Refreshing user data after webhook delay");
         try {
           await refreshUserData();
-          console.log("✅ User data refreshed");
         } catch (e) {
           console.log("❌ Failed to refresh:", e);
         }
@@ -132,7 +122,6 @@ export default function Home() {
 
     if (!uploadedImage?.file || isSubmitting || !user || !userData) return;
 
-    // Check if user has credits
     if (credits <= 0) {
       setError(
         "You don't have enough credits to process this image. Please purchase more credits.",
@@ -148,7 +137,6 @@ export default function Home() {
       const base64Image = await convertFileToBase64(uploadedImage.file);
       const idToken = await user.getIdToken();
 
-      // Start the prediction (no credit deduction yet)
       const response = await fetch(`${API_BASE_URL}/api/predictions`, {
         method: "POST",
         headers: {
@@ -173,7 +161,6 @@ export default function Home() {
 
       let prediction = await response.json();
 
-      // Poll for completion
       while (
         prediction.status !== "succeeded" &&
         prediction.status !== "failed"
@@ -207,18 +194,12 @@ export default function Home() {
         throw new Error(prediction.error || "Prediction failed");
       }
 
-      // Deduct credit BEFORE showing the result
       if (prediction.status === "succeeded") {
         try {
           await deductCredit(user, 1);
-
-          // Credit deduction successful - now show the result
           setPrediction(prediction);
-
-          // Update credits display
           await refreshUserData();
         } catch (deductionError) {
-          // Credit deduction failed - don't show the result
           setError(
             deductionError instanceof Error
               ? `Payment processing failed: ${deductionError.message}`
@@ -247,7 +228,6 @@ export default function Home() {
     };
   }, [uploadedImage]);
 
-  // Show paddle error if it exists
   useEffect(() => {
     if (paddleError) {
       setError(paddleError);
@@ -256,153 +236,215 @@ export default function Home() {
 
   if (authLoading) {
     return (
-      <div className="m-28 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2e6f40]"></div>
       </div>
     );
   }
 
   return (
-    <div className="m-28 space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        {/* Credits Display with Buy Credits Button */}
-        {userData && (
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-50 px-4 py-2 rounded-lg">
-              <span className="text-sm font-medium text-blue-900">
-                Credits: {credits}
-                {isProcessingPayment && (
-                  <span className="ml-2 text-orange-600">
-                    (Processing payment...)
-                  </span>
-                )}
-              </span>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo/Brand */}
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                Photo Restorer
+              </h1>
             </div>
-            <Button
-              outline
-              onClick={() => setShowPurchaseModal(true)}
-              disabled={!paddleReady || paddleLoading || isProcessingPayment}
-              className="text-sm"
-            >
-              <CreditCardIcon className="h-4 w-4" />
-              {isProcessingPayment ? "Processing..." : "Buy Credits"}
-            </Button>
-          </div>
-        )}
-        <Authentication />
-      </div>
 
-      {!user ? (
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-semibold mb-4">
-            Sign in to start processing images
-          </h2>
-          <p className="text-gray-600 mb-8">
-            You need to be authenticated to use the image restoration features.
-          </p>
-        </div>
-      ) : userData ? (
-        <>
-          {isNewUser && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <h3 className="text-green-800 font-medium">
-                Welcome to Photo Restorer!
-              </h3>
-              <p className="text-green-700 text-sm mt-1">
-                You currently have {credits} credits. Purchase credits to start
-                restoring your photos.
-              </p>
-            </div>
-          )}
-
-          {credits <= 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <h3 className="text-yellow-800 font-medium">
-                No Credits Remaining
-              </h3>
-              <p className="text-yellow-700 text-sm mt-1">
-                You need credits to process images. Please purchase credits to
-                continue.
-              </p>
-              <Button
-                outline
-                onClick={() => setShowPurchaseModal(true)}
-                disabled={!paddleReady || paddleLoading || isProcessingPayment}
-                className="mt-3"
-              >
-                <CreditCardIcon className="h-4 w-4" />
-                Buy Credits Now
-              </Button>
-            </div>
-          )}
-
-          {uploadedImage ? (
-            <>
-              <ImagePreview
-                image={uploadedImage}
-                onRemove={handleRemoveImage}
-              />
-              <div className="flex justify-center gap-4">
-                <Button
-                  outline
-                  onClick={() => {}}
-                  disabled={!canSubmit}
-                  className="w-48"
-                >
-                  <SparklesIcon />
-                  {isSubmitting ? "Processing..." : "Recolour"}
-                </Button>
-                <Button
-                  outline
-                  onClick={handleRestore}
-                  disabled={!canSubmit}
-                  className="w-48"
-                >
-                  <SparklesIcon />
-                  {isSubmitting ? "Processing..." : "Restore"}
-                </Button>
-              </div>
-              {credits <= 0 && (
-                <p className="text-center text-sm text-red-600 mt-2">
-                  Purchase credits to process images
-                </p>
-              )}
-            </>
-          ) : (
-            <ImageUploader
-              onFileUpload={handleFileUpload}
-              onError={handleError}
-              disabled={credits <= 0}
-            />
-          )}
-
-          {error && <ErrorDisplay error={error} />}
-
-          {prediction && (
-            <>
-              {prediction.output && (
-                <div className="image-wrapper mt-5">
-                  <Image
-                    src={prediction.output}
-                    alt="output"
-                    sizes="100vw"
-                    height={410}
-                    width={410}
-                  />
+            {/* Right side - Credits & User */}
+            <div className="flex items-center gap-4">
+              {userData && (
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#2e6f40]/10 px-3 py-1.5 rounded-lg border border-[#2e6f40]/20">
+                    <span className="text-sm font-medium text-[#2e6f40] dark:text-[#4ade80]">
+                      {credits} credits
+                      {isProcessingPayment && (
+                        <span className="ml-2 text-orange-600">
+                          (Processing...)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <Button
+                    outline
+                    onClick={() => setShowPurchaseModal(true)}
+                    disabled={
+                      !paddleReady || paddleLoading || isProcessingPayment
+                    }
+                    className="text-sm hidden sm:flex"
+                  >
+                    <CreditCardIcon className="h-4 w-4" />
+                    Buy Credits
+                  </Button>
                 </div>
               )}
-              <p className="py-3 text-sm opacity-50">
-                status: {prediction.status}
-              </p>
-            </>
-          )}
-        </>
-      ) : (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="text-gray-600 mt-2">Setting up your account...</p>
+              <Authentication />
+            </div>
+          </div>
         </div>
-      )}
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        {!user ? (
+          <div className="max-w-md mx-auto text-center py-12">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                Sign in to start processing images
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-8">
+                You need to be authenticated to use the image restoration
+                features.
+              </p>
+            </div>
+          </div>
+        ) : userData ? (
+          <div className="space-y-6">
+            {/* Status Banners */}
+            {isNewUser && (
+              <div className="bg-[#2e6f40]/10 border border-[#2e6f40]/20 rounded-lg p-4">
+                <h3 className="text-[#2e6f40] font-medium dark:text-[#4ade80]">
+                  Welcome to Photo Restorer!
+                </h3>
+                <p className="text-[#2e6f40]/80 text-sm mt-1 dark:text-[#4ade80]/80">
+                  You currently have {credits} credits. Purchase credits to
+                  start restoring your photos.
+                </p>
+              </div>
+            )}
+
+            {credits <= 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-900/10 dark:border-amber-900/20">
+                <h3 className="text-amber-800 font-medium dark:text-amber-400">
+                  No Credits Remaining
+                </h3>
+                <p className="text-amber-700 text-sm mt-1 dark:text-amber-400/80">
+                  You need credits to process images. Please purchase credits to
+                  continue.
+                </p>
+                <Button
+                  onClick={() => setShowPurchaseModal(true)}
+                  disabled={
+                    !paddleReady || paddleLoading || isProcessingPayment
+                  }
+                  className="mt-3"
+                  color="amber"
+                >
+                  <CreditCardIcon className="h-4 w-4" />
+                  Buy Credits Now
+                </Button>
+              </div>
+            )}
+
+            {/* Main Processing Area - Always Centered */}
+            <div className="max-w-2xl mx-auto space-y-6">
+              {/* Upload/Preview Section */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                  Upload Image
+                </h2>
+
+                {uploadedImage ? (
+                  <div className="space-y-4">
+                    <ImagePreview
+                      image={uploadedImage}
+                      onRemove={handleRemoveImage}
+                    />
+
+                    {/* Single Restore Button */}
+                    <div className="flex justify-center">
+                      <Button
+                        onClick={handleRestore}
+                        disabled={!canSubmit}
+                        className="px-8"
+                        color="emerald"
+                      >
+                        <SparklesIcon className="h-4 w-4" />
+                        {isSubmitting ? "Processing..." : "Restore"}
+                      </Button>
+                    </div>
+
+                    {credits <= 0 && (
+                      <p className="text-center text-sm text-red-600 dark:text-red-400">
+                        Purchase credits to process images
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <ImageUploader
+                    onFileUpload={handleFileUpload}
+                    onError={handleError}
+                    disabled={credits <= 0}
+                  />
+                )}
+              </div>
+
+              {/* Results Section */}
+              {prediction && prediction.output && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Restored Image
+                    </h3>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        prediction.status === "succeeded"
+                          ? "bg-[#2e6f40]/10 text-[#2e6f40] dark:bg-green-900/20 dark:text-green-400"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                      }`}
+                    >
+                      {prediction.status}
+                    </span>
+                  </div>
+
+                  <div className="rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-700">
+                    <Image
+                      src={prediction.output}
+                      alt="Restored output"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      height={410}
+                      width={410}
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <ErrorDisplay error={error} />
+                </div>
+              )}
+
+              {/* Processing Status */}
+              {isSubmitting && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#2e6f40]"></div>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Processing your image...
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-md mx-auto text-center py-12">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e6f40] mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">
+                Setting up your account...
+              </p>
+            </div>
+          </div>
+        )}
+      </main>
 
       {/* Purchase Credits Modal */}
       <PurchaseCreditsModal
