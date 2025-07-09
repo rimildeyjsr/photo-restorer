@@ -52,6 +52,33 @@ const deductCredit = async (user: any, amount: number = 1) => {
   return await response.json();
 };
 
+// Function to properly download image from URL
+const downloadImageFromUrl = async (imageUrl: string, filename: string) => {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+    return true;
+  } catch (error) {
+    console.error("Download failed:", error);
+    return false;
+  }
+};
+
 export default function Home() {
   const {
     user,
@@ -76,11 +103,16 @@ export default function Home() {
   const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] =
     useState<boolean>(false);
+  const [hasDownloaded, setHasDownloaded] = useState<boolean>(false);
+  const [showDownloadWarning, setShowDownloadWarning] =
+    useState<boolean>(false);
 
   const handleFileUpload = useCallback((imageFile: ImageFile) => {
     setUploadedImage(imageFile);
     setError(null);
     setPrediction(null);
+    setHasDownloaded(false);
+    setShowDownloadWarning(false);
   }, []);
 
   const handleError = useCallback((errorMessage: string) => {
@@ -93,6 +125,7 @@ export default function Home() {
       setUploadedImage(null);
       setError(null);
       setPrediction(null);
+      setHasDownloaded(false);
     }
   }, [uploadedImage]);
 
@@ -132,6 +165,7 @@ export default function Home() {
     setIsSubmitting(true);
     setError(null);
     setPrediction(null);
+    setHasDownloaded(false);
 
     try {
       const base64Image = await convertFileToBase64(uploadedImage.file);
@@ -215,6 +249,32 @@ export default function Home() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDownload = async () => {
+    if (!prediction?.output || !uploadedImage?.file.name) return;
+
+    const filename = `restored-${uploadedImage.file.name}`;
+    const success = await downloadImageFromUrl(prediction.output, filename);
+
+    if (success) {
+      setHasDownloaded(true);
+    } else {
+      setError("Failed to download image. Please try again.");
+    }
+  };
+
+  const handleRestoreAnother = () => {
+    if (!hasDownloaded) {
+      setShowDownloadWarning(true);
+      return;
+    }
+
+    setUploadedImage(null);
+    setPrediction(null);
+    setError(null);
+    setHasDownloaded(false);
+    setShowDownloadWarning(false);
   };
 
   const canSubmit =
@@ -353,7 +413,7 @@ export default function Home() {
                     <div className="space-y-4">
                       <ImagePreview
                         image={uploadedImage}
-                        onRemove={handleRemoveImage}
+                        onRemove={isSubmitting ? undefined : handleRemoveImage}
                       />
 
                       {/* Single Restore Button */}
@@ -440,19 +500,32 @@ export default function Home() {
                     </div>
                   </div>
 
+                  {/* Status Messages */}
+                  {hasDownloaded && (
+                    <div className="mb-4 p-3 bg-[#2e6f40]/10 border border-[#2e6f40]/20 rounded-lg">
+                      <p className="text-sm text-[#2e6f40] dark:text-[#4ade80] text-center">
+                        ✓ Image downloaded successfully! You can now restore
+                        another image.
+                      </p>
+                    </div>
+                  )}
+
+                  {showDownloadWarning && !hasDownloaded && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/10 dark:border-red-900/20">
+                      <p className="text-sm text-red-700 dark:text-red-400 text-center">
+                        Please download your restored image before proceeding to
+                        restore another image.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button
-                      onClick={() => {
-                        const link = document.createElement("a");
-                        link.href = prediction.output;
-                        link.download = `restored-${uploadedImage?.file.name || "image"}`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }}
+                      onClick={handleDownload}
                       className="px-6"
                       color="emerald"
+                      disabled={hasDownloaded}
                     >
                       <svg
                         className="h-4 w-4"
@@ -467,16 +540,12 @@ export default function Home() {
                           d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
                         />
                       </svg>
-                      Download Image
+                      {hasDownloaded ? "Downloaded" : "Download Image"}
                     </Button>
 
                     <Button
                       outline
-                      onClick={() => {
-                        setUploadedImage(null);
-                        setPrediction(null);
-                        setError(null);
-                      }}
+                      onClick={handleRestoreAnother}
                       className="px-6"
                     >
                       <SparklesIcon className="h-4 w-4" />
