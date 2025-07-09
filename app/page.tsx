@@ -342,53 +342,55 @@ export default function Home() {
 
             {/* Main Processing Area - Always Centered */}
             <div className="max-w-2xl mx-auto space-y-6">
-              {/* Upload/Preview Section */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
-                  Upload Image
-                </h2>
+              {/* Upload/Preview Section - Only show if no results yet */}
+              {!prediction?.output && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                    Upload Image
+                  </h2>
 
-                {uploadedImage ? (
-                  <div className="space-y-4">
-                    <ImagePreview
-                      image={uploadedImage}
-                      onRemove={handleRemoveImage}
-                    />
+                  {uploadedImage ? (
+                    <div className="space-y-4">
+                      <ImagePreview
+                        image={uploadedImage}
+                        onRemove={handleRemoveImage}
+                      />
 
-                    {/* Single Restore Button */}
-                    <div className="flex justify-center">
-                      <Button
-                        onClick={handleRestore}
-                        disabled={!canSubmit}
-                        className="px-8"
-                        color="emerald"
-                      >
-                        <SparklesIcon className="h-4 w-4" />
-                        {isSubmitting ? "Processing..." : "Restore"}
-                      </Button>
+                      {/* Single Restore Button */}
+                      <div className="flex justify-center">
+                        <Button
+                          onClick={handleRestore}
+                          disabled={!canSubmit}
+                          className="px-8"
+                          color="emerald"
+                        >
+                          <SparklesIcon className="h-4 w-4" />
+                          {isSubmitting ? "Processing..." : "Restore"}
+                        </Button>
+                      </div>
+
+                      {credits <= 0 && (
+                        <p className="text-center text-sm text-red-600 dark:text-red-400">
+                          Purchase credits to process images
+                        </p>
+                      )}
                     </div>
+                  ) : (
+                    <ImageUploader
+                      onFileUpload={handleFileUpload}
+                      onError={handleError}
+                      disabled={credits <= 0}
+                    />
+                  )}
+                </div>
+              )}
 
-                    {credits <= 0 && (
-                      <p className="text-center text-sm text-red-600 dark:text-red-400">
-                        Purchase credits to process images
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <ImageUploader
-                    onFileUpload={handleFileUpload}
-                    onError={handleError}
-                    disabled={credits <= 0}
-                  />
-                )}
-              </div>
-
-              {/* Results Section */}
+              {/* Results Section - Before/After Comparison */}
               {prediction && prediction.output && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Restored Image
+                      Your restored image!
                     </h3>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -401,15 +403,85 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <div className="rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-700">
-                    <Image
-                      src={prediction.output}
-                      alt="Restored output"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      height={410}
-                      width={410}
-                      className="w-full h-auto"
-                    />
+                  {/* Before/After Images */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {/* Before Image */}
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                        Before
+                      </h4>
+                      <div className="rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-700">
+                        <Image
+                          src={uploadedImage?.preview || ""}
+                          alt="Original image"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          height={300}
+                          width={300}
+                          className="w-full h-auto"
+                        />
+                      </div>
+                    </div>
+
+                    {/* After Image */}
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                        After
+                      </h4>
+                      <div className="rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-700">
+                        <Image
+                          src={prediction.output}
+                          alt="Restored image"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          height={300}
+                          width={300}
+                          className="w-full h-auto"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = prediction.output;
+                        link.download = `restored-${uploadedImage?.file.name || "image"}`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="px-6"
+                      color="emerald"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                        />
+                      </svg>
+                      Download Image
+                    </Button>
+
+                    <Button
+                      outline
+                      onClick={() => {
+                        setUploadedImage(null);
+                        setPrediction(null);
+                        setError(null);
+                      }}
+                      className="px-6"
+                    >
+                      <SparklesIcon className="h-4 w-4" />
+                      Restore Another Image
+                    </Button>
                   </div>
                 </div>
               )}
@@ -418,18 +490,6 @@ export default function Home() {
               {error && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                   <ErrorDisplay error={error} />
-                </div>
-              )}
-
-              {/* Processing Status */}
-              {isSubmitting && (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <div className="flex items-center justify-center space-x-3">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#2e6f40]"></div>
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Processing your image...
-                    </span>
-                  </div>
                 </div>
               )}
             </div>
