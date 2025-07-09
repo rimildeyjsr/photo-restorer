@@ -119,17 +119,17 @@ export function ImageUploader({
 
   const getDropzoneClasses = () => {
     const baseClasses =
-      "relative min-h-64 rounded-xl border-2 border-dashed p-12 text-center transition-all duration-200 ease-in-out";
+      "relative min-h-64 rounded-xl border-2 border-dashed p-8 sm:p-12 text-center transition-all duration-200 ease-in-out cursor-pointer group";
 
     if (disabled) {
       return `${baseClasses} border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50 cursor-not-allowed opacity-60`;
     }
 
     if (dragActive) {
-      return `${baseClasses} border-blue-500 bg-blue-50 dark:bg-blue-950/20 scale-[1.02] cursor-pointer`;
+      return `${baseClasses} border-[#2e6f40] bg-[#2e6f40]/5 dark:bg-[#2e6f40]/10 scale-[1.01] shadow-lg border-2`;
     }
 
-    return `${baseClasses} border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 cursor-pointer`;
+    return `${baseClasses} border-gray-200 dark:border-gray-600 hover:border-[#2e6f40] dark:hover:border-[#2e6f40] hover:bg-[#2e6f40]/5 dark:hover:bg-[#2e6f40]/10 hover:shadow-md`;
   };
 
   const getIconBackgroundClasses = () => {
@@ -138,10 +138,10 @@ export function ImageUploader({
     }
 
     if (dragActive) {
-      return "bg-blue-100 dark:bg-blue-900/30";
+      return "bg-[#2e6f40]/10 dark:bg-[#2e6f40]/20 scale-110";
     }
 
-    return "bg-zinc-100 dark:bg-zinc-800";
+    return "bg-gray-100 dark:bg-gray-800 group-hover:bg-[#2e6f40]/10 dark:group-hover:bg-[#2e6f40]/20 group-hover:scale-105";
   };
 
   const getIconClasses = () => {
@@ -150,10 +150,10 @@ export function ImageUploader({
     }
 
     if (dragActive) {
-      return "text-blue-600 dark:text-blue-400";
+      return "text-[#2e6f40] dark:text-[#4ade80]";
     }
 
-    return "text-zinc-400 dark:text-zinc-500";
+    return "text-gray-400 dark:text-gray-500 group-hover:text-[#2e6f40] dark:group-hover:text-[#4ade80]";
   };
 
   const getTextClasses = () => {
@@ -161,7 +161,11 @@ export function ImageUploader({
       return "text-gray-500 dark:text-gray-400";
     }
 
-    return "text-zinc-900 dark:text-zinc-100";
+    if (dragActive) {
+      return "text-[#2e6f40] dark:text-[#4ade80] font-semibold";
+    }
+
+    return "text-gray-900 dark:text-gray-100 group-hover:text-[#2e6f40] dark:group-hover:text-[#4ade80]";
   };
 
   const getSubTextClasses = () => {
@@ -169,7 +173,7 @@ export function ImageUploader({
       return "text-gray-400 dark:text-gray-500";
     }
 
-    return "text-zinc-500 dark:text-zinc-400";
+    return "text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300";
   };
 
   return (
@@ -190,37 +194,70 @@ export function ImageUploader({
           disabled={disabled}
         />
 
-        <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="flex flex-col items-center justify-center space-y-6">
+          {/* Icon with background */}
           <div
-            className={`rounded-full p-6 transition-colors ${getIconBackgroundClasses()}`}
+            className={`rounded-full p-4 sm:p-6 transition-all duration-200 ${getIconBackgroundClasses()}`}
           >
             {disabled ? (
               <LockClosedIcon
-                className={`h-16 w-16 transition-colors ${getIconClasses()}`}
+                className={`h-12 w-12 sm:h-16 sm:w-16 transition-all duration-200 ${getIconClasses()}`}
               />
             ) : (
               <PhotoIcon
-                className={`h-16 w-16 transition-colors ${getIconClasses()}`}
+                className={`h-12 w-12 sm:h-16 sm:w-16 transition-all duration-200 ${getIconClasses()}`}
               />
             )}
           </div>
 
-          <div className="space-y-2">
-            <p
-              className={`text-lg font-semibold transition-colors ${getTextClasses()}`}
+          {/* Text content */}
+          <div className="space-y-3">
+            <h3
+              className={`text-lg sm:text-xl font-semibold transition-all duration-200 ${getTextClasses()}`}
             >
               {disabled
                 ? disabledMessage
                 : dragActive
                   ? "Drop your image here"
                   : "Drop image here or click to upload"}
-            </p>
-            <p className={`text-sm transition-colors ${getSubTextClasses()}`}>
-              {disabled
-                ? "Purchase credits to upload and process images"
-                : `Support for PNG, JPG, GIF, WebP up to ${maxSizeInMB}MB`}
-            </p>
+            </h3>
+
+            <div className="space-y-1">
+              <p
+                className={`text-sm transition-all duration-200 ${getSubTextClasses()}`}
+              >
+                {disabled
+                  ? "Purchase credits to upload and process images"
+                  : `Support for PNG, JPG, GIF, WebP up to ${maxSizeInMB}MB`}
+              </p>
+
+              {!disabled && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  Maximum file size: {maxSizeInMB}MB
+                </p>
+              )}
+            </div>
           </div>
+
+          {/* Upload hint for active state */}
+          {!disabled && (
+            <div className="flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500">
+              <div className="hidden sm:flex items-center space-x-1">
+                <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">
+                  Click
+                </kbd>
+                <span>or</span>
+                <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">
+                  Drag & Drop
+                </kbd>
+              </div>
+              <div className="sm:hidden">
+                <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">
+                  Tap to select
+                </kbd>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

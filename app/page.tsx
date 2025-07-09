@@ -378,25 +378,32 @@ export default function Home() {
             )}
 
             {credits <= 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-900/10 dark:border-amber-900/20">
-                <h3 className="text-amber-800 font-medium dark:text-amber-400">
-                  No Credits Remaining
-                </h3>
-                <p className="text-amber-700 text-sm mt-1 dark:text-amber-400/80">
-                  You need credits to process images. Please purchase credits to
-                  continue.
-                </p>
-                <Button
-                  onClick={() => setShowPurchaseModal(true)}
-                  disabled={
-                    !paddleReady || paddleLoading || isProcessingPayment
-                  }
-                  className="mt-3"
-                  color="amber"
-                >
-                  <CreditCardIcon className="h-4 w-4" />
-                  Buy Credits Now
-                </Button>
+              <div
+                className="rounded-lg p-4 border"
+                style={{ backgroundColor: "#fffee0", borderColor: "#f3f0a7" }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 className="font-medium" style={{ color: "#8b5a00" }}>
+                      No Credits Remaining
+                    </h3>
+                    <p className="text-sm" style={{ color: "#a16800" }}>
+                      You need credits to process images. Please purchase
+                      credits to continue.
+                    </p>
+                  </div>
+                  <Button
+                    outline
+                    onClick={() => setShowPurchaseModal(true)}
+                    disabled={
+                      !paddleReady || paddleLoading || isProcessingPayment
+                    }
+                    className="shrink-0 text-sm px-4 py-2"
+                  >
+                    <CreditCardIcon className="h-4 w-4" />
+                    Buy Credits
+                  </Button>
+                </div>
               </div>
             )}
 
