@@ -5,9 +5,6 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "build-open": "opennextjs-cloudflare build",
-    "preview": "npm run build-open && opennextjs-cloudflare preview",
-    "deploy": "npm run build-open && opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "next lint"
   },
