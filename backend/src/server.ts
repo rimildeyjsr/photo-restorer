@@ -25,7 +25,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://photo-restorer.vercel.app",
+      "https://photo-restorer-rimildeyjsrs-projects.vercel.app",
       process.env.FRONTEND_URL,
     ].filter((url): url is string => Boolean(url)),
     credentials: true,
