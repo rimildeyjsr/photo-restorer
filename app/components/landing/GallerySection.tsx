@@ -3,36 +3,28 @@ import { BeforeAfterSlider } from "./BeforeAfterSlider";
 export function GallerySection() {
   const examples = [
     {
-      before:
-        "https://images.unsplash.com/photo-1604078250436-81d77b84c2b9?w=500&h=300&fit=crop&crop=center",
-      after:
-        "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&h=300&fit=crop&crop=center",
-      beforeAlt: "Damaged vintage family photo",
+      before: "/images/photo-two.jpg",
+      after: "/images/photo-two-restored.jpg",
+      beforeAlt: "Damaged vintage family portrait",
+      afterAlt: "Restored vintage family portrait",
+    },
+    {
+      before: "/images/photo-three.jpg",
+      after: "/images/photo-three-restored.jpg",
+      beforeAlt: "Faded old family photograph",
+      afterAlt: "Restored clear family photograph",
+    },
+    {
+      before: "/images/photo-four.jpg",
+      after: "/images/photo-four-restored.jpg",
+      beforeAlt: "Water-damaged vintage portrait",
+      afterAlt: "Restored vintage portrait",
+    },
+    {
+      before: "/images/photo-five.jpg",
+      after: "/images/photo-five-restored.jpg",
+      beforeAlt: "Scratched vintage family photo",
       afterAlt: "Restored vintage family photo",
-    },
-    {
-      before:
-        "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=500&h=300&fit=crop&crop=center",
-      after:
-        "https://images.unsplash.com/photo-1604078250436-81d77b84c2b9?w=500&h=300&fit=crop&crop=center",
-      beforeAlt: "Faded old photograph",
-      afterAlt: "Restored clear photograph",
-    },
-    {
-      before:
-        "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&h=300&fit=crop&crop=center",
-      after:
-        "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=500&h=300&fit=crop&crop=center",
-      beforeAlt: "Water-damaged family portrait",
-      afterAlt: "Restored family portrait",
-    },
-    {
-      before:
-        "https://images.unsplash.com/photo-1604078250436-81d77b84c2b9?w=500&h=300&fit=crop&crop=center",
-      after:
-        "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&h=300&fit=crop&crop=center",
-      beforeAlt: "Scratched vintage photo",
-      afterAlt: "Restored vintage photo",
     },
   ];
 

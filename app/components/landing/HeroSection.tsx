@@ -57,11 +57,13 @@ export function HeroSection({
         </div>
 
         {/* Hero Before/After Slider */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <BeforeAfterSlider
-            beforeImage="https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=800&h=400&fit=crop&crop=center"
-            afterImage="https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=800&h=400&fit=crop&crop=center"
-            className="shadow-2xl"
+            beforeImage="/images/photo-one.jpg"
+            afterImage="/images/photo-one-restored.jpg"
+            beforeAlt="Damaged vintage family photo"
+            afterAlt="Restored vintage family photo"
+            className="shadow-2xl h-96 md:h-[500px] lg:h-[600px]"
           />
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
             Drag the slider to see the difference ✨

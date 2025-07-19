@@ -6,7 +6,6 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { ProblemSolutionSection } from "@/components/landing/ProblemSolutionSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { GallerySection } from "@/components/landing/GallerySection";
-import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Footer } from "@/components/landing/Footer";
@@ -67,8 +66,6 @@ export default function LandingPage() {
       <div id="gallery">
         <GallerySection />
       </div>
-
-      <SocialProofSection />
 
       <div id="pricing">
         <PricingSection

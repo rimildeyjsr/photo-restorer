@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -23,34 +22,32 @@ export function BeforeAfterSlider({
     setSliderPosition(Number(e.target.value));
   };
 
+  // If className includes height classes, use those, otherwise use default h-80
+  const heightClass = className.includes("h-") ? "" : "h-80";
+  const containerClasses = `relative w-full ${heightClass} overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 ${className}`;
+
   return (
-    <div
-      className={`relative w-full h-80 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 ${className}`}
-    >
+    <div className={containerClasses}>
       {/* Before Image */}
-      <div className="absolute inset-0">
-        <Image
+      <div className="absolute inset-0 bg-gray-900">
+        <img
           src={beforeImage}
           alt={beforeAlt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
+          className="w-full h-full object-contain"
         />
       </div>
 
       {/* After Image with clip-path */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 bg-gray-900"
         style={{
           clipPath: `polygon(${sliderPosition}% 0%, 100% 0%, 100% 100%, ${sliderPosition}% 100%)`,
         }}
       >
-        <Image
+        <img
           src={afterImage}
           alt={afterAlt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
+          className="w-full h-full object-contain"
         />
       </div>
 
