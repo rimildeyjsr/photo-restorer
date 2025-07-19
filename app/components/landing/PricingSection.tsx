@@ -18,11 +18,61 @@ export function PricingSection({
             Simple, Transparent Pricing
           </h3>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            No subscriptions. No hidden fees. Pay only for what you use.
+            Start with 1 free restoration, then pay only for what you use.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {/* Free Trial */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-2 border-[#2e6f40] relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <div className="bg-[#2e6f40] text-white text-sm font-medium px-3 py-1 rounded-full">
+                Start Here
+              </div>
+            </div>
+
+            <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Free Trial
+            </h4>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              $0
+            </div>
+            <div className="text-[#2e6f40] font-medium mb-6">
+              1 photo restoration
+            </div>
+
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-center">
+                <CheckIcon className="h-4 w-4 text-[#2e6f40] mr-2" />
+                <span className="text-gray-600 dark:text-gray-400">
+                  Try the service free
+                </span>
+              </li>
+              <li className="flex items-center">
+                <CheckIcon className="h-4 w-4 text-[#2e6f40] mr-2" />
+                <span className="text-gray-600 dark:text-gray-400">
+                  High-quality results
+                </span>
+              </li>
+              <li className="flex items-center">
+                <CheckIcon className="h-4 w-4 text-[#2e6f40] mr-2" />
+                <span className="text-gray-600 dark:text-gray-400">
+                  No credit card required
+                </span>
+              </li>
+            </ul>
+
+            <Button
+              onClick={onSignInWithGoogle}
+              className="w-full"
+              color="emerald"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Try Free Now"}
+            </Button>
+          </div>
+
+          {/* Lite Package */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
             <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               Lite Package
@@ -65,10 +115,11 @@ export function PricingSection({
             </Button>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-2 border-[#2e6f40] relative">
+          {/* Pro Package */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 relative">
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <div className="bg-[#2e6f40] text-white text-sm font-medium px-3 py-1 rounded-full">
-                Most Popular
+              <div className="bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full">
+                Best Value
               </div>
             </div>
 
@@ -112,7 +163,7 @@ export function PricingSection({
             <Button
               onClick={onSignInWithGoogle}
               className="w-full"
-              color="emerald"
+              outline
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Get Started"}

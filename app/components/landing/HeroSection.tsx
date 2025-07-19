@@ -21,11 +21,19 @@ export function HeroSection({
             Bring Your Family
             <span className="block text-[#2e6f40]">Memories Back to Life</span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-6">
             Restore damaged, faded, and old family photos in seconds using
             advanced AI technology. Don't let precious moments fade away
             forever.
           </p>
+
+          {/* Free Credit Badge */}
+          <div className="inline-flex items-center gap-2 bg-[#2e6f40]/10 border border-[#2e6f40]/20 rounded-full px-4 py-2 mb-8">
+            <SparklesIcon className="h-4 w-4 text-[#2e6f40]" />
+            <span className="text-[#2e6f40] font-medium text-sm">
+              Try it FREE - Get 1 restoration credit on signup
+            </span>
+          </div>
 
           {/* Hero CTA */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -36,7 +44,7 @@ export function HeroSection({
               disabled={isLoading}
             >
               <SparklesIcon className="h-5 w-5" />
-              {isLoading ? "Signing in..." : "Start Restoring Photos"}
+              {isLoading ? "Signing in..." : "Try Free Now"}
             </Button>
             <Button
               outline

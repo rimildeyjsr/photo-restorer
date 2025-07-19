@@ -47,20 +47,20 @@ router.post("/", async (req: AuthenticatedRequest, res: Response) => {
     }
 
     console.log("👤 User doesn't exist, creating new user...");
-    // Create new user
+    // Create new user with 1 free credit
     const newUsers = await db
       .insert(users)
       .values({
         firebaseUid,
         email,
         name,
-        credits: 0,
+        credits: 1, // ✅ Give 1 free credit to new users
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .returning();
 
-    console.log("✅ User created successfully");
+    console.log("✅ User created successfully with 1 free credit");
     res.json({
       user: newUsers[0],
       isNewUser: true,

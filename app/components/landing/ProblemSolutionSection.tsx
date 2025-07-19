@@ -14,9 +14,8 @@ export function ProblemSolutionSection() {
                 cherish most.
               </p>
               <p>
-                Traditional photo restoration costs hundreds of dollars and
-                takes weeks. But what if you could restore them yourself in
-                minutes?
+                Traditional photo restoration costs $50-500+ per photo and takes
+                weeks. But what if you could restore them yourself in minutes?
               </p>
             </div>
 
@@ -30,9 +29,9 @@ export function ProblemSolutionSection() {
                 </div>
               </div>
               <div className="text-center p-4 bg-white dark:bg-gray-900 rounded-lg">
-                <div className="text-2xl font-bold text-[#2e6f40]">$2-25</div>
+                <div className="text-2xl font-bold text-[#2e6f40]">FREE</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  vs $200+ traditional
+                  First restoration
                 </div>
               </div>
             </div>
@@ -44,8 +43,8 @@ export function ProblemSolutionSection() {
                 ❌ Traditional Restoration
               </h4>
               <ul className="space-y-2 text-gray-600 dark:text-gray-400">
-                <li>• $200-500+ per photo</li>
-                <li>• 2-4 weeks waiting time</li>
+                <li>• $50-500+ per photo</li>
+                <li>• 1-4 weeks waiting time</li>
                 <li>• Risk of losing originals</li>
                 <li>• Limited availability</li>
               </ul>
@@ -56,7 +55,10 @@ export function ProblemSolutionSection() {
                 ✅ AI Photo Restoration
               </h4>
               <ul className="space-y-2 text-[#2e6f40]/80">
-                <li>• $2-25 per photo</li>
+                <li>
+                  • <strong>First photo FREE</strong>
+                </li>
+                <li>• Then $2-25 per photo</li>
                 <li>• Results in seconds</li>
                 <li>• Keep your originals safe</li>
                 <li>• Available 24/7</li>

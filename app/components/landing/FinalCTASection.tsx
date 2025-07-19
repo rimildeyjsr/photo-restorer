@@ -16,20 +16,30 @@ export function FinalCTASection({
         <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
           Ready to Restore Your Family Memories?
         </h3>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
           Join thousands of families who have already brought their precious
           photos back to life.
         </p>
 
-        <Button
-          onClick={onSignInWithGoogle}
-          className="px-8 py-3 text-lg"
-          color="emerald"
-          disabled={isLoading}
-        >
-          <SparklesIcon className="h-5 w-5" />
-          {isLoading ? "Signing in..." : "Start Restoring Now"}
-        </Button>
+        {/* Free Trial Badge */}
+        <div className="inline-flex items-center gap-2 bg-[#2e6f40]/10 border border-[#2e6f40]/20 rounded-full px-4 py-2 mb-6">
+          <SparklesIcon className="h-4 w-4 text-[#2e6f40]" />
+          <span className="text-[#2e6f40] font-medium text-sm">
+            No credit card required • 1 free restoration
+          </span>
+        </div>
+
+        <div className="mb-8">
+          <Button
+            onClick={onSignInWithGoogle}
+            className="px-8 py-3 text-lg"
+            color="emerald"
+            disabled={isLoading}
+          >
+            <SparklesIcon className="h-5 w-5" />
+            {isLoading ? "Signing in..." : "Try Free Now"}
+          </Button>
+        </div>
       </div>
     </section>
   );

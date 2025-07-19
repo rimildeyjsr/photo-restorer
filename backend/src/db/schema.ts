@@ -7,7 +7,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   firebaseUid: text("firebaseUid").notNull().unique(),
   name: text("name"),
-  credits: integer("credits").notNull().default(0),
+  credits: integer("credits").notNull().default(1),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt")
     .notNull()
