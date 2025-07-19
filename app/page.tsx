@@ -1,4 +1,6 @@
 "use client";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/landing/Header";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { ProblemSolutionSection } from "@/components/landing/ProblemSolutionSection";
@@ -10,14 +12,25 @@ import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Footer } from "@/components/landing/Footer";
 
 export default function LandingPage() {
-  const handleGetStarted = () => {
-    // Redirect to your app
-    window.location.href = "/app";
-  };
+  const { user, loading, signInWithGoogle } = useAuth();
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const handleSignIn = () => {
-    // Redirect to your app (where authentication happens)
+  // If user is already authenticated, redirect to app
+  if (user && !loading) {
     window.location.href = "/app";
+    return null;
+  }
+
+  const handleSignInWithGoogle = async () => {
+    setIsSigningIn(true);
+    try {
+      await signInWithGoogle();
+      // User will be redirected to /app automatically by the auth state change
+    } catch (error) {
+      console.error("Sign in failed:", error);
+    } finally {
+      setIsSigningIn(false);
+    }
   };
 
   const handleSeeExamples = () => {
@@ -25,13 +38,26 @@ export default function LandingPage() {
     document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2e6f40]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      <Header onSignIn={handleSignIn} onGetStarted={handleGetStarted} />
+      <Header
+        onSignInWithGoogle={handleSignInWithGoogle}
+        isLoading={isSigningIn}
+      />
 
       <HeroSection
-        onGetStarted={handleGetStarted}
+        onSignInWithGoogle={handleSignInWithGoogle}
         onSeeExamples={handleSeeExamples}
+        isLoading={isSigningIn}
       />
 
       <ProblemSolutionSection />
@@ -45,10 +71,16 @@ export default function LandingPage() {
       <SocialProofSection />
 
       <div id="pricing">
-        <PricingSection onGetStarted={handleGetStarted} />
+        <PricingSection
+          onSignInWithGoogle={handleSignInWithGoogle}
+          isLoading={isSigningIn}
+        />
       </div>
 
-      <FinalCTASection onGetStarted={handleGetStarted} />
+      <FinalCTASection
+        onSignInWithGoogle={handleSignInWithGoogle}
+        isLoading={isSigningIn}
+      />
 
       <Footer />
     </div>

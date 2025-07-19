@@ -2,10 +2,14 @@ import { Button } from "@/catalyst-ui-kit/button";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
 interface PricingSectionProps {
-  onGetStarted: () => void;
+  onSignInWithGoogle: () => void;
+  isLoading?: boolean;
 }
 
-export function PricingSection({ onGetStarted }: PricingSectionProps) {
+export function PricingSection({
+  onSignInWithGoogle,
+  isLoading = false,
+}: PricingSectionProps) {
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -51,8 +55,13 @@ export function PricingSection({ onGetStarted }: PricingSectionProps) {
               </li>
             </ul>
 
-            <Button onClick={onGetStarted} className="w-full" outline>
-              Get Started
+            <Button
+              onClick={onSignInWithGoogle}
+              className="w-full"
+              outline
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Get Started"}
             </Button>
           </div>
 
@@ -100,8 +109,13 @@ export function PricingSection({ onGetStarted }: PricingSectionProps) {
               </li>
             </ul>
 
-            <Button onClick={onGetStarted} className="w-full" color="emerald">
-              Get Started
+            <Button
+              onClick={onSignInWithGoogle}
+              className="w-full"
+              color="emerald"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Get Started"}
             </Button>
           </div>
         </div>

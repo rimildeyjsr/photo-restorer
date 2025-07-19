@@ -3,11 +3,16 @@ import { SparklesIcon } from "@heroicons/react/24/outline";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 
 interface HeroSectionProps {
-  onGetStarted: () => void;
+  onSignInWithGoogle: () => void;
   onSeeExamples: () => void;
+  isLoading?: boolean;
 }
 
-export function HeroSection({ onGetStarted, onSeeExamples }: HeroSectionProps) {
+export function HeroSection({
+  onSignInWithGoogle,
+  onSeeExamples,
+  isLoading = false,
+}: HeroSectionProps) {
   return (
     <section className="py-16 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,12 +30,13 @@ export function HeroSection({ onGetStarted, onSeeExamples }: HeroSectionProps) {
           {/* Hero CTA */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button
-              onClick={onGetStarted}
+              onClick={onSignInWithGoogle}
               className="px-8 py-3 text-lg"
               color="emerald"
+              disabled={isLoading}
             >
               <SparklesIcon className="h-5 w-5" />
-              Restore Photos Now
+              {isLoading ? "Signing in..." : "Start Restoring Photos"}
             </Button>
             <Button
               outline

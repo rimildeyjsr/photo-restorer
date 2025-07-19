@@ -2,10 +2,14 @@ import { Button } from "@/catalyst-ui-kit/button";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 
 interface FinalCTASectionProps {
-  onGetStarted: () => void;
+  onSignInWithGoogle: () => void;
+  isLoading?: boolean;
 }
 
-export function FinalCTASection({ onGetStarted }: FinalCTASectionProps) {
+export function FinalCTASection({
+  onSignInWithGoogle,
+  isLoading = false,
+}: FinalCTASectionProps) {
   return (
     <section className="py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -18,12 +22,13 @@ export function FinalCTASection({ onGetStarted }: FinalCTASectionProps) {
         </p>
 
         <Button
-          onClick={onGetStarted}
+          onClick={onSignInWithGoogle}
           className="px-8 py-3 text-lg"
           color="emerald"
+          disabled={isLoading}
         >
           <SparklesIcon className="h-5 w-5" />
-          Start Restoring Now
+          {isLoading ? "Signing in..." : "Start Restoring Now"}
         </Button>
       </div>
     </section>
