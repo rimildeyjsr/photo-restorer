@@ -59,8 +59,8 @@ export function HeroSection({
         {/* Hero Before/After Slider */}
         <div className="max-w-6xl mx-auto">
           <BeforeAfterSlider
-            beforeImage="/images/photo-one.jpg"
-            afterImage="/images/photo-one-restored.jpg"
+            beforeImage="/images/photo-two.jpg"
+            afterImage="/images/photo-two-restored.jpg"
             beforeAlt="Damaged vintage family photo"
             afterAlt="Restored vintage family photo"
             className="shadow-2xl h-96 md:h-[500px] lg:h-[600px]"

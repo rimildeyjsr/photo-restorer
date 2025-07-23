@@ -3,8 +3,8 @@ import { BeforeAfterSlider } from "./BeforeAfterSlider";
 export function GallerySection() {
   const examples = [
     {
-      before: "/images/photo-two.jpg",
-      after: "/images/photo-two-restored.jpg",
+      before: "/images/photo-one.jpg",
+      after: "/images/photo-one-restored.jpg",
       beforeAlt: "Damaged vintage family portrait",
       afterAlt: "Restored vintage family portrait",
     },
