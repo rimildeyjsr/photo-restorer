@@ -15,7 +15,7 @@ import { Prediction } from "replicate";
 import Image from "next/image";
 import { API_BASE_URL } from "@/lib/api";
 
-// Landing page components
+// landing
 import { Header } from "@/components/landing/Header";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
@@ -370,40 +370,51 @@ export default function AppPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo/Brand */}
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            <div className="flex items-center min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                 Photo Restorer
               </h1>
             </div>
 
             {/* Right side - Credits & User */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               {userData && (
-                <div className="flex items-center gap-3">
-                  <div className="bg-[#2e6f40]/10 px-3 py-1.5 rounded-lg border border-[#2e6f40]/20">
-                    <span className="text-sm font-medium text-[#2e6f40] dark:text-[#4ade80]">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Credits display - same height as buttons */}
+                  <div className="bg-[#2e6f40]/10 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg border border-[#2e6f40]/20 h-10 flex items-center">
+                    <span className="text-xs sm:text-sm font-medium text-[#2e6f40] dark:text-[#4ade80] whitespace-nowrap">
                       {credits} credits
                       {isProcessingPayment && (
-                        <span className="ml-2 text-orange-600">
+                        <span className="ml-1 sm:ml-2 text-orange-600 hidden xs:inline">
                           (Processing...)
                         </span>
                       )}
                     </span>
                   </div>
-                  <Button
-                    outline
-                    onClick={() => setShowPurchaseModal(true)}
-                    disabled={
-                      !paddleReady || paddleLoading || isProcessingPayment
-                    }
-                    className="text-sm hidden sm:flex"
-                  >
-                    <CreditCardIcon className="h-4 w-4" />
-                    Buy Credits
-                  </Button>
+
+                  {/* Buy Credits and Sign Out buttons - no gap on mobile */}
+                  <div className="flex gap-1 sm:gap-3">
+                    {/* Single Buy Credits Button - same height as credits */}
+                    <Button
+                      outline
+                      onClick={() => setShowPurchaseModal(true)}
+                      disabled={
+                        !paddleReady || paddleLoading || isProcessingPayment
+                      }
+                      className="text-xs sm:text-sm h-10 px-2 sm:px-3"
+                      title="Buy Credits"
+                    >
+                      <CreditCardIcon className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">Buy Credits</span>
+                    </Button>
+
+                    {/* Sign Out Button */}
+                    <div className="min-w-0">
+                      <Authentication />
+                    </div>
+                  </div>
                 </div>
               )}
-              <Authentication />
             </div>
           </div>
         </div>
