@@ -1,3 +1,4 @@
+// app/components/landing/FinalCTASection.tsx - CLEAN WITH STRATEGIC SEO
 import { Button } from "@/catalyst-ui-kit/button";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 
@@ -18,7 +19,7 @@ export function FinalCTASection({
         </h3>
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
           Join thousands of families who have already brought their precious
-          photos back to life.
+          photos back to life with our photo restoration service.
         </p>
 
         {/* Free Trial Badge */}
@@ -37,9 +38,14 @@ export function FinalCTASection({
             disabled={isLoading}
           >
             <SparklesIcon className="h-5 w-5" />
-            {isLoading ? "Signing in..." : "Try Free Now"}
+            {isLoading ? "Signing in..." : "Restore Photos Free"}
           </Button>
         </div>
+
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          Professional photo restoration • Restore old photos • AI-powered
+          technology
+        </p>
       </div>
     </section>
   );

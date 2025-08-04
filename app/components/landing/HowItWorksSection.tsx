@@ -1,3 +1,4 @@
+// app/components/landing/HowItWorksSection.tsx - CLEAN WITH STRATEGIC SEO
 import {
   CloudArrowUpIcon,
   SparklesIcon,
@@ -10,7 +11,7 @@ export function HowItWorksSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Restore Photos in 3 Simple Steps
+            How to Restore Old Photos in 3 Simple Steps
           </h3>
           <p className="text-lg text-gray-600 dark:text-gray-400">
             No technical skills required. Just upload, wait, and download.

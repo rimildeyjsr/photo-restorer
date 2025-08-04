@@ -1,3 +1,4 @@
+// app/components/landing/PricingSection.tsx - CLEAN WITH STRATEGIC SEO
 import { Button } from "@/catalyst-ui-kit/button";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
@@ -18,7 +19,7 @@ export function PricingSection({
             Simple, Transparent Pricing
           </h3>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Start with 1 free restoration, then pay only for what you use.
+            Start with 1 free photo restoration, then pay only for what you use.
           </p>
         </div>
 
@@ -88,7 +89,7 @@ export function PricingSection({
               <li className="flex items-center">
                 <CheckIcon className="h-4 w-4 text-[#2e6f40] mr-2" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  Process 5 photos
+                  Restore 5 old photos
                 </span>
               </li>
               <li className="flex items-center">
@@ -137,13 +138,13 @@ export function PricingSection({
               <li className="flex items-center">
                 <CheckIcon className="h-4 w-4 text-[#2e6f40] mr-2" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  Process 100 photos
+                  Restore 100 old photos
                 </span>
               </li>
               <li className="flex items-center">
                 <CheckIcon className="h-4 w-4 text-[#2e6f40] mr-2" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  High-quality results
+                  Professional quality
                 </span>
               </li>
               <li className="flex items-center">
@@ -169,6 +170,14 @@ export function PricingSection({
               {isLoading ? "Signing in..." : "Get Started"}
             </Button>
           </div>
+        </div>
+
+        {/* Simple bottom text with keywords */}
+        <div className="mt-12 text-center">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
+            Professional photo restoration services • Affordable pricing •
+            Restore old photos instantly
+          </p>
         </div>
       </div>
     </section>

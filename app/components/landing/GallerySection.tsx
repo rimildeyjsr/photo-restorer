@@ -1,3 +1,4 @@
+// app/components/landing/GallerySection.tsx - CLEAN WITH STRATEGIC SEO
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 
 export function GallerySection() {
@@ -5,26 +6,26 @@ export function GallerySection() {
     {
       before: "/images/photo-one.jpg",
       after: "/images/photo-one-restored.jpg",
-      beforeAlt: "Damaged vintage family portrait",
-      afterAlt: "Restored vintage family portrait",
+      beforeAlt: "Damaged vintage family portrait before restoration",
+      afterAlt: "Restored vintage family portrait after AI enhancement",
     },
     {
       before: "/images/photo-three.jpg",
       after: "/images/photo-three-restored.jpg",
-      beforeAlt: "Faded old family photograph",
-      afterAlt: "Restored clear family photograph",
+      beforeAlt: "Faded old family photograph before restoration",
+      afterAlt: "Restored clear family photograph with enhanced colors",
     },
     {
       before: "/images/photo-four.jpg",
       after: "/images/photo-four-restored.jpg",
-      beforeAlt: "Water-damaged vintage portrait",
-      afterAlt: "Restored vintage portrait",
+      beforeAlt: "Water-damaged vintage portrait before restoration",
+      afterAlt: "Restored vintage portrait with repaired water damage",
     },
     {
       before: "/images/photo-five.jpg",
       after: "/images/photo-five-restored.jpg",
-      beforeAlt: "Scratched vintage family photo",
-      afterAlt: "Restored vintage family photo",
+      beforeAlt: "Scratched vintage family photo before restoration",
+      afterAlt: "Restored vintage family photo with scratches removed",
     },
   ];
 
@@ -68,6 +69,14 @@ export function GallerySection() {
             beforeAlt={examples[3].beforeAlt}
             afterAlt={examples[3].afterAlt}
           />
+        </div>
+
+        {/* Simple keyword integration */}
+        <div className="mt-12 text-center">
+          <p className="text-gray-600 dark:text-gray-400">
+            Professional photo restoration • Restore old photos • Repair damaged
+            pictures
+          </p>
         </div>
       </div>
     </section>
