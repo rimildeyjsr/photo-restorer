@@ -26,6 +26,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://photo-restorer-rimildeyjsrs-projects.vercel.app",
+      "https://www.photo-restorer.com",
+      "https://photo-restorer.com",
       process.env.FRONTEND_URL,
     ].filter((url): url is string => Boolean(url)),
     credentials: true,
